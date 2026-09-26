@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoGreen - Direct Farmer to Consumer Platform</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-light: #d1fae5;
+            --secondary: #10b981;
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f8fafc;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4, .brand-text {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Header Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #065f46;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .logo i {
+            background: #d1fae5;
+            color: #059669;
+            padding: 0.5rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
+            color: white;
+            padding: 4rem 1.5rem 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200') center/cover;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: #a7f3d0;
+            max-width: 650px;
+            margin: 0 auto 2rem;
+            font-weight: 300;
+        }
+
+        /* Search Bar */
+        .search-container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container i {
+            color: var(--text-muted);
+            margin-left: 1.25rem;
+            font-size: 1.1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .search-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1280px;
+            margin: -2rem auto 4rem;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 20;
+            flex: 1;
+        }
+
+        /* Filter Tabs */
+        .controls-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Product Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.75rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.12);
+        }
+
+        .product-img-wrapper {
+            position: relative;
+            height: 200px;
+            width: 100%;
+            background-color: #f1f5f9;
+            overflow: hidden;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.05);
+        }
+
+        .location-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 500;
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.6rem;
+            border-radius: 9999px;
+        }
+
+        .product-info {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .product-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .product-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .product-price {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #f59e0b;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--text-main);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1.5px solid var(--border-color);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Order Table */
+        .orders-table-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1.1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        /* Toast Alert */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1e293b;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-success {
+            border-left: 4px solid var(--primary);
+        }
+
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 3rem 1.5rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 2rem;
+        }
+
+        .footer-logo {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-sub {
+            max-width: 1280px;
+            margin: 1.5rem auto 0;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .nav-links { display: none; }
+            .controls-bar { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fa-solid fa-wheat-awn"></i>
+                <span class="brand-text">EcoGreen Farm</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><span class="nav-link active" onclick="switchTab('all')">Explore Market</span></li>
+                <li><span class="nav-link" onclick="openAddProductModal()"><i class="fa-solid fa-plus-circle"></i> Add Produce</span></li>
+                <li><span class="nav-link" onclick="openOrdersModal()"><i class="fa-solid fa-receipt"></i> Orders</span></li>
+                <li><span class="nav-link" onclick="openApiDocsModal()"><i class="fa-solid fa-code"></i> API Docs</span></li>
+            </ul>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <button class="btn btn-outline" onclick="openAuthModal('login')">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </button>
+                <button class="btn btn-primary" onclick="openAddProductModal()">
+                    <i class="fa-solid fa-store"></i> List Product
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fa-solid fa-shield-halved"></i> 100% Direct Farm Fresh & Fair Trade
+            </div>
+            <h1>Fresh Farm Produce Delivered Direct to You</h1>
+            <p>Connecting local farmers directly with consumers — lowering costs, guaranteeing fresh quality, and supporting agricultural communities.</p>
+
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search tomatoes, carrots, honey, eggs, organic apples..." onkeyup="handleSearch(event)">
+                <button class="search-btn" onclick="executeSearch()">Search Produce</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Controls & Filter Bar -->
+        <div class="controls-bar">
+            <div class="tab-group">
+                <button class="tab-btn active" id="tab-all" onclick="filterProducts('all')">All Produce</button>
+                <button class="tab-btn" id="tab-vegetables" onclick="filterProducts('vegetable')">Vegetables</button>
+                <button class="tab-btn" id="tab-fruits" onclick="filterProducts('fruit')">Fruits</button>
+                <button class="tab-btn" id="tab-dairy" onclick="filterProducts('dairy')">Dairy & Eggs</button>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                <span>Showing: <strong id="productCount" style="color: var(--text-main);">0</strong> items</span>
+                <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="loadProducts()">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Products Grid Container -->
+        <div id="productsGrid" class="products-grid">
+            <!-- Dynamically Populated -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fa-solid fa-wheat-awn" style="color: var(--secondary);"></i>
+                EcoGreen Farmer-to-Consumer
+            </div>
+            <div>
+                Direct-to-Consumer Agricultural Commerce Platform
+            </div>
+        </div>
+        <div class="footer-sub">
+            &copy; 2026 EcoGreen Platform. Powered by Flask, SQLAlchemy, JWT Authentication & Mpesa Integration.
+        </div>
+    </footer>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
+                <i class="fa-solid fa-basket-shopping"></i> Complete Your Order
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Purchase directly from local verified farmers.</p>
+
+            <form id="orderForm" onsubmit="submitOrder(event)">
+                <input type="hidden" id="orderProductId">
+                
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
+                    <div id="orderProductTitle" style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;"></div>
+                    <div id="orderProductPrice" style="color: var(--primary); font-weight: 800; font-size: 1.2rem;"></div>
+                    <div id="orderProductLocation" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number (Mpesa Payment)</label>
+                    <input type="tel" id="orderPhone" class="form-input" placeholder="2547XXXXXXXX" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Delivery Address / Pickup Note</label>
+                    <textarea id="orderAddress" class="form-textarea" rows="2" placeholder="Enter delivery location details..." required></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal('orderModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">
+                        <i class="fa-solid fa-mobile-screen-button"></i> Pay & Confirm Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('addProductModal')"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-seedling"></i> List New Farm Produce
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">List your fresh harvest directly to consumers.</p>
+
+            <form id="addProductForm" onsubmit="submitNewProduct(event)">
+                <div class="form-group">
+                    <label class="form-label">Produce Name</label>
+                    <input type="text" id="prodName" class="form-input" placeholder="e.g. Organic Red Tomatoes (10kg)" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Price ($ / KSh)</label>
+                        <input type="number" step="0.01" id="prodPrice" class="form-input" placeholder="15.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantity Available</label>
+                        <input type="number" id="prodQuantity" class="form-input" placeholder="50" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Farm Location</label>
+                    <input type="text" id="prodLocation" class="form-input" placeholder="e.g. Green Valley Farm, Nakuru" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Image URL (or un-splash link)</label>
+                    <input type="url" id="prodImage" class="form-input" placeholder="https://images.unsplash.com/..." required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Produce Description</label>
+                    <textarea id="prodDesc" class="form-textarea" rows="3" placeholder="Describe farming methods, freshness, and quality..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                    <i class="fa-solid fa-check"></i> Publish Product Listing
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Orders Overview Modal -->
+    <div id="ordersModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 800px;">
+            <button class="modal-close" onclick="closeModal('ordersModal')"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-clipboard-list"></i> Customer Orders Dashboard
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Recent order transactions placed on the platform.</p>
+
+            <div class="orders-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product ID</th>
+                            <th>Status</th>
+                            <th>Order Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Dynamically filled -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+            <h2 id="authTitle" style="margin-bottom: 0.5rem; color: var(--primary);">User Login</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Access your farmer or consumer profile.</p>
+
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <input type="hidden" id="authMode" value="login">
+                
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="authUsername" class="form-input" placeholder="john_farmer" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <div id="registerFields" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="authEmail" class="form-input" placeholder="farmer@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" id="authPhone" class="form-input" placeholder="254712345678">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Type</label>
+                        <select id="authUserType" class="form-select">
+                            <option value="farmer">Farmer (Seller)</option>
+                            <option value="consumer">Consumer (Buyer)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="authSubmitBtn">
+                    Sign In
+                </button>
+
+                <div style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem; color: var(--text-muted);">
+                    <span id="authToggleText">Don't have an account?</span>
+                    <a href="javascript:void(0)" onclick="toggleAuthMode()" style="color: var(--primary); font-weight: 600; text-decoration: none;" id="authToggleBtn">Register Now</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- API Documentation Modal -->
+    <div id="apiDocsModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 750px;">
+            <button class="modal-close" onclick="closeModal('apiDocsModal')"><i class="fa-solid fa-xmark"></i></button>
+            <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-network-wired"></i> REST API Documentation
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Backend endpoints provided by Flask API.</p>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="badge-status badge-active">GET</span> <code style="font-weight: 700; margin-left: 0.5rem;">/api/v1/products</code>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Fetch paginated list of all products with reviews</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="badge-status badge-pending">POST</span> <code style="font-weight: 700; margin-left: 0.5rem;">/api/v1/products/create</code>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Create a new farm product listing</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="badge-status badge-active">GET</span> <code style="font-weight: 700; margin-left: 0.5rem;">/api/v1/Orders</code>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Get all placed customer orders</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="badge-status badge-pending">POST</span> <code style="font-weight: 700; margin-left: 0.5rem;">/api/v1/Login</code>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Authenticate user and issue JWT access token</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="badge-status badge-pending">POST</span> <code style="font-weight: 700; margin-left: 0.5rem;">/pay</code>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Trigger Mpesa Express STK Push payment</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast toast-success">
+        <i class="fa-solid fa-circle-check" style="color: var(--secondary); font-size: 1.2rem;"></i>
+        <span id="toastMsg">Operation completed successfully</span>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        let allProducts = [];
+        let jwtToken = localStorage.getItem('farmer_app_jwt') || '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+        });
+
+        // Load Products from Backend API
+        async function loadProducts() {
+            try {
+                const headers = {};
+                if (jwtToken) {
+                    headers['Authorization'] = 'Bearer ' + jwtToken;
+                }
+
+                const res = await fetch('/api/v1/products', { headers });
+                const json = await res.json();
+
+                if (json.status === 'success' && Array.isArray(json.data)) {
+                    allProducts = json.data;
+                    renderProducts(allProducts);
+                } else if (Array.isArray(json)) {
+                    allProducts = json;
+                    renderProducts(allProducts);
+                }
+            } catch (err) {
+                console.error('Error loading products:', err);
+                showToast('Failed to load products from API backend', true);
+            }
+        }
+
+        // Render Product Cards
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            document.getElementById('productCount').textContent = products.length;
+
+            if (products.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <i class="fa-solid fa-leaf"></i>
+                        <h3>No Produce Found</h3>
+                        <p style="color: var(--text-muted);">Be the first farmer to list fresh produce on the platform!</p>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="openAddProductModal()">+ List Produce</button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="product-img-wrapper">
+                        <img src="${p.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'}" alt="${escapeHtml(p.name)}" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'">
+                        <div class="location-badge">
+                            <i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.location || 'Local Farm')}
+                        </div>
+                        <div class="stock-badge">
+                            ${p.quantity} in stock
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title">${escapeHtml(p.name)}</h3>
+                        <p class="product-desc">${escapeHtml(p.description || 'Fresh farm product direct from verified farmer.')}</p>
+                        <div class="product-meta">
+                            <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> ${p.avg_rating ? p.avg_rating : '5.0'}
+                            </div>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-primary" onclick="openOrderModal(${p.id})">
+                                <i class="fa-solid fa-cart-shopping"></i> Order Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search Filter
+        function handleSearch(e) {
+            if (e.key === 'Enter') executeSearch();
+        }
+
+        function executeSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                renderProducts(allProducts);
+                return;
+            }
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                (p.description && p.description.toLowerCase().includes(query)) ||
+                (p.location && p.location.toLowerCase().includes(query))
+            );
+            renderProducts(filtered);
+        }
+
+        function filterProducts(category) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (event) event.target.classList.add('active');
+
+            if (category === 'all') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.name.toLowerCase().includes(category) || (p.description && p.description.toLowerCase().includes(category)));
+                renderProducts(filtered);
+            }
+        }
+
+        // Open Order Modal
+        function openOrderModal(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return;
+
+            document.getElementById('orderProductId').value = product.id;
+            document.getElementById('orderProductTitle').textContent = product.name;
+            document.getElementById('orderProductPrice').textContent = '$' + parseFloat(product.price).toFixed(2);
+            document.getElementById('orderProductLocation').textContent = '📍 Farm: ' + (product.location || 'Local Farm');
+            
+            document.getElementById('orderModal').classList.add('active');
+        }
+
+        // Submit Order
+        async function submitOrder(e) {
+            e.preventDefault();
+            const productId = document.getElementById('orderProductId').value;
+            const phone = document.getElementById('orderPhone').value;
+
+            try {
+                const res = await fetch('/api/v1/Orders/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + jwtToken
+                    },
+                    body: JSON.stringify({
+                        product_id: parseInt(productId),
+                        user_id: 1,
+                        status: 'Pending',
+                        phone_number: phone,
+                        amount: 10.0
+                    })
+                });
+
+                closeModal('orderModal');
+                showToast('Order submitted! Processing Mpesa payment confirmation...');
+            } catch (err) {
+                showToast('Failed to submit order', true);
+            }
+        }
+
+        // Open Add Product Modal
+        function openAddProductModal() {
+            document.getElementById('addProductModal').classList.add('active');
+        }
+
+        // Submit New Product
+        async function submitNewProduct(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('name', document.getElementById('prodName').value);
+            formData.append('price', document.getElementById('prodPrice').value);
+            formData.append('quantity', document.getElementById('prodQuantity').value);
+            formData.append('location', document.getElementById('prodLocation').value);
+            formData.append('description', document.getElementById('prodDesc').value);
+
+            const imageUrl = document.getElementById('prodImage').value;
+
+            try {
+                // If direct JSON request or FormData
+                const res = await fetch('/api/v1/products/create', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                closeModal('addProductModal');
+                showToast('Product successfully listed!');
+                loadProducts();
+            } catch (err) {
+                showToast('Error adding product', true);
+            }
+        }
+
+        // Orders View Modal
+        async function openOrdersModal() {
+            try {
+                const res = await fetch('/api/v1/Orders');
+                const json = await res.json();
+                const orders = json.data || [];
+                
+                const tbody = document.getElementById('ordersTableBody');
+                if (orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No orders recorded yet</td></tr>';
+                } else {
+                    tbody.innerHTML = orders.map(o => `
+                        <tr>
+                            <td>#${o.id}</td>
+                            <td>Product #${o.product_id}</td>
+                            <td><span class="badge-status badge-pending">${o.status || 'Pending'}</span></td>
+                            <td>${o.orderDate || new Date().toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                document.getElementById('ordersModal').classList.add('active');
+            } catch (err) {
+                showToast('Could not fetch orders', true);
+            }
+        }
+
+        // Open Auth Modal
+        function openAuthModal(mode = 'login') {
+            document.getElementById('authMode').value = mode;
+            if (mode === 'login') {
+                document.getElementById('authTitle').textContent = 'User Login';
+                document.getElementById('registerFields').style.display = 'none';
+                document.getElementById('authSubmitBtn').textContent = 'Sign In';
+                document.getElementById('authToggleText').textContent = "Don't have an account?";
+                document.getElementById('authToggleBtn').textContent = 'Register Now';
+            } else {
+                document.getElementById('authTitle').textContent = 'Create Account';
+                document.getElementById('registerFields').style.display = 'block';
+                document.getElementById('authSubmitBtn').textContent = 'Register';
+                document.getElementById('authToggleText').textContent = 'Already have an account?';
+                document.getElementById('authToggleBtn').textContent = 'Login Here';
+            }
+            document.getElementById('authModal').classList.add('active');
+        }
+
+        function toggleAuthMode() {
+            const current = document.getElementById('authMode').value;
+            openAuthModal(current === 'login' ? 'register' : 'login');
+        }
+
+        async function handleAuthSubmit(e) {
+            e.preventDefault();
+            const mode = document.getElementById('authMode').value;
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (mode === 'login') {
+                try {
+                    const res = await fetch('/api/v1/Login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const json = await res.json();
+                    if (res.ok && json['access-token']) {
+                        jwtToken = json['access-token'];
+                        localStorage.setItem('farmer_app_jwt', jwtToken);
+                        showToast('Successfully logged in!');
+                        closeModal('authModal');
+                    } else {
+                        showToast(json.error || 'Invalid credentials', true);
+                    }
+                } catch (err) {
+                    showToast('Login failed', true);
+                }
+            } else {
+                try {
+                    const email = document.getElementById('authEmail').value;
+                    const phone_number = document.getElementById('authPhone').value;
+                    const user_type = document.getElementById('authUserType').value;
+
+                    const res = await fetch('/api/v1/User/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password, email, phone_number, user_type })
+                    });
+                    const json = await res.json();
+                    if (res.ok) {
+                        showToast('User account created! Please log in.');
+                        openAuthModal('login');
+                    } else {
+                        showToast(json.error || 'Failed to create user', true);
+                    }
+                } catch (err) {
+                    showToast('Registration failed', true);
+                }
+            }
+        }
+
+        function openApiDocsModal() {
+            document.getElementById('apiDocsModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.className = 'toast show ' + (isError ? 'toast-error' : 'toast-success');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
