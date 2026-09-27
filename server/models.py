@@ -8,16 +8,20 @@ migrate = Migrate()
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    name = db.Column(db.String(150), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    description = db.Column(db.String(200))
-    image = db.Column(db.String(200))  # Cloudinary public_id for the image
-    location = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    image = db.Column(db.Text)  # Image URL or public_id
+    location = db.Column(db.String(150))
     quantity = db.Column(db.Integer, nullable=False)
+
+    user = db.relationship('User', backref=db.backref('products', lazy=True))
 
     def to_dict(self):
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'name': self.name,
             'price': self.price,
             'description': self.description,
@@ -29,11 +33,11 @@ class Product(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
-    phone_number = db.Column(db.Float, nullable=False)
+    phone_number = db.Column(db.String(50), nullable=True)
     password = db.Column(db.String(200))
-    email = db.Column(db.String(200), unique=True)  # Cloudinary public_id for the image
-    user_type = db.Column(db.String())
-    status = db.Column(db.String())
+    email = db.Column(db.String(200), unique=True)
+    user_type = db.Column(db.String(50))
+    status = db.Column(db.String(50))
     def repr(self):
         return f'<User {self.id}>'
     

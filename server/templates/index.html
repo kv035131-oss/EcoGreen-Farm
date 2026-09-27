@@ -834,33 +834,51 @@
         <div class="modal-card">
             <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
             <h2 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
-                <i class="fa-solid fa-basket-shopping"></i> Complete Your Order
+                <i class="fa-solid fa-basket-shopping"></i> Complete Produce Order
             </h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Purchase directly from local verified farmers.</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Direct purchase from local verified farmers via Mpesa Express.</p>
 
             <form id="orderForm" onsubmit="submitOrder(event)">
                 <input type="hidden" id="orderProductId">
+                <input type="hidden" id="orderUnitPrice" value="0">
                 
-                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
-                    <div id="orderProductTitle" style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;"></div>
-                    <div id="orderProductPrice" style="color: var(--primary); font-weight: 800; font-size: 1.2rem;"></div>
-                    <div id="orderProductLocation" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;"></div>
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 14px; margin-bottom: 1.25rem; border: 1px solid var(--border-color); display: flex; gap: 1rem; align-items: center;">
+                    <img id="orderProductImg" src="" alt="Product" style="width: 70px; height: 70px; object-fit: cover; border-radius: 10px;">
+                    <div style="flex: 1;">
+                        <div id="orderProductTitle" style="font-weight: 700; font-size: 1.05rem; margin-bottom: 0.2rem;"></div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <span id="orderProductPrice" style="color: var(--primary); font-weight: 800; font-size: 1.15rem;"></span>
+                            <span id="orderProductStock" style="font-size: 0.8rem; color: var(--text-muted); background: #e2e8f0; padding: 0.1rem 0.5rem; border-radius: 9999px;"></span>
+                        </div>
+                        <div id="orderProductLocation" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;"></div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Order Quantity</label>
+                        <input type="number" id="orderQuantity" class="form-input" value="1" min="1" onchange="updateOrderTotal()" onkeyup="updateOrderTotal()" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total Amount</label>
+                        <div id="orderTotalDisplay" style="padding: 0.75rem 1rem; background: #ecfdf5; border: 1.5px solid var(--primary); border-radius: 10px; font-weight: 800; color: var(--primary); font-size: 1.1rem; text-align: center;">$0.00</div>
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Phone Number (Mpesa Payment)</label>
-                    <input type="tel" id="orderPhone" class="form-input" placeholder="2547XXXXXXXX" required>
+                    <label class="form-label"><i class="fa-solid fa-mobile-screen-button" style="color:#10b981;"></i> Mpesa Phone Number (Payment Prompt)</label>
+                    <input type="tel" id="orderPhone" class="form-input" placeholder="254712345678" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Delivery Address / Pickup Note</label>
-                    <textarea id="orderAddress" class="form-textarea" rows="2" placeholder="Enter delivery location details..." required></textarea>
+                    <label class="form-label">Delivery Address / Notes</label>
+                    <textarea id="orderAddress" class="form-textarea" rows="2" placeholder="Provide delivery address or special instructions..." required></textarea>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal('orderModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 2;">
-                        <i class="fa-solid fa-mobile-screen-button"></i> Pay & Confirm Order
+                        <i class="fa-solid fa-credit-card"></i> Pay via Mpesa & Confirm
                     </button>
                 </div>
             </form>
@@ -874,12 +892,12 @@
             <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-seedling"></i> List New Farm Produce
             </h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">List your fresh harvest directly to consumers.</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Publish your fresh harvest directly for consumers.</p>
 
             <form id="addProductForm" onsubmit="submitNewProduct(event)">
                 <div class="form-group">
                     <label class="form-label">Produce Name</label>
-                    <input type="text" id="prodName" class="form-input" placeholder="e.g. Organic Red Tomatoes (10kg)" required>
+                    <input type="text" id="prodName" class="form-input" placeholder="e.g. Fresh Organic Tomatoes (10kg)" required>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -888,7 +906,7 @@
                         <input type="number" step="0.01" id="prodPrice" class="form-input" placeholder="15.00" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Quantity Available</label>
+                        <label class="form-label">Stock Quantity</label>
                         <input type="number" id="prodQuantity" class="form-input" placeholder="50" required>
                     </div>
                 </div>
@@ -899,8 +917,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Image URL (or un-splash link)</label>
+                    <label class="form-label">Produce Image URL</label>
                     <input type="url" id="prodImage" class="form-input" placeholder="https://images.unsplash.com/..." required>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Quick Preset Image:</span>
+                        <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500')">Tomatoes</button>
+                        <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500')">Carrots</button>
+                        <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500')">Honey</button>
+                        <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500')">Eggs</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -909,29 +934,36 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-                    <i class="fa-solid fa-check"></i> Publish Product Listing
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Publish Produce Listing
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Orders Overview Modal -->
+    <!-- Orders Dashboard Modal -->
     <div id="ordersModal" class="modal-overlay">
-        <div class="modal-card" style="max-width: 800px;">
+        <div class="modal-card" style="max-width: 850px;">
             <button class="modal-close" onclick="closeModal('ordersModal')"><i class="fa-solid fa-xmark"></i></button>
-            <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-clipboard-list"></i> Customer Orders Dashboard
-            </h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Recent order transactions placed on the platform.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <h2 style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-clipboard-list"></i> My Orders Dashboard
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Private order history for your account.</p>
+                </div>
+            </div>
 
             <div class="orders-table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>Order ID</th>
-                            <th>Product ID</th>
+                            <th>Produce</th>
+                            <th>Customer / Phone</th>
+                            <th>Amount</th>
+                            <th>Date</th>
                             <th>Status</th>
-                            <th>Order Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody">
@@ -1239,47 +1271,105 @@
             }
         }
 
+        function setPresetImage(url) {
+            document.getElementById('prodImage').value = url;
+        }
+
         // Open Order Modal
         function openOrderModal(productId) {
             const product = allProducts.find(p => p.id === productId);
             if (!product) return;
 
             document.getElementById('orderProductId').value = product.id;
+            document.getElementById('orderUnitPrice').value = product.price;
+            document.getElementById('orderProductImg').src = product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
             document.getElementById('orderProductTitle').textContent = product.name;
             document.getElementById('orderProductPrice').textContent = '$' + parseFloat(product.price).toFixed(2);
+            document.getElementById('orderProductStock').textContent = `${product.quantity} in stock`;
             document.getElementById('orderProductLocation').textContent = '📍 Farm: ' + (product.location || 'Local Farm');
+            document.getElementById('orderQuantity').value = 1;
+            document.getElementById('orderQuantity').max = product.quantity || 100;
+            
+            updateOrderTotal();
+
             if (currentUser && currentUser.phone_number) {
                 document.getElementById('orderPhone').value = currentUser.phone_number;
+            } else {
+                document.getElementById('orderPhone').value = '254712345678';
             }
             document.getElementById('orderModal').classList.add('active');
         }
 
-        // Submit Order
+        function updateOrderTotal() {
+            const unitPrice = parseFloat(document.getElementById('orderUnitPrice').value) || 0;
+            const qty = parseInt(document.getElementById('orderQuantity').value) || 1;
+            const total = (unitPrice * qty).toFixed(2);
+            document.getElementById('orderTotalDisplay').textContent = '$' + total;
+        }
+
+        // Submit Order & Trigger Payment Prompt
         async function submitOrder(e) {
             e.preventDefault();
-            const productId = document.getElementById('orderProductId').value;
+            const productId = parseInt(document.getElementById('orderProductId').value);
+            const unitPrice = parseFloat(document.getElementById('orderUnitPrice').value) || 0;
+            const qty = parseInt(document.getElementById('orderQuantity').value) || 1;
+            const totalAmount = parseFloat((unitPrice * qty).toFixed(2));
             const phone = document.getElementById('orderPhone').value;
 
             try {
-                const res = await fetch('/api/v1/Orders/create', {
+                // 1. Create Order in backend database
+                const headers = { 'Content-Type': 'application/json' };
+                if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
+
+                const orderRes = await fetch('/api/v1/Orders/create', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + jwtToken
-                    },
+                    headers: headers,
                     body: JSON.stringify({
-                        product_id: parseInt(productId),
+                        product_id: productId,
                         user_id: currentUser ? currentUser.id : 1,
                         status: 'Pending',
                         phone_number: phone,
-                        amount: 10.0
+                        amount: totalAmount
                     })
                 });
 
+                let orderData = {};
+                try {
+                    const orderText = await orderRes.text();
+                    orderData = JSON.parse(orderText);
+                } catch (parseErr) {
+                    console.warn('Order JSON parse warning:', parseErr);
+                }
+
+                if (!orderRes.ok || orderData.status === 'error') {
+                    throw new Error(orderData.error || 'Failed to place order');
+                }
+
+                // 2. Trigger Mpesa Express STK Push payment prompt (best-effort)
+                let msg = `Order #${orderData.order_id || ''} placed successfully!`;
+                try {
+                    const payRes = await fetch('/pay', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            phone: phone,
+                            amount: Math.round(totalAmount) || 1
+                        })
+                    });
+                    const payText = await payRes.text();
+                    const payJson = JSON.parse(payText);
+                    if (payJson && (payJson.CustomerMessage || payJson.ResponseDescription)) {
+                        msg = `Order #${orderData.order_id || ''} Placed! ${payJson.CustomerMessage || payJson.ResponseDescription}`;
+                    }
+                } catch (payErr) {
+                    console.warn('Mpesa STK push notification warning:', payErr);
+                }
+
                 closeModal('orderModal');
-                showToast('Order submitted! Processing Mpesa payment confirmation...');
+                showToast(msg);
             } catch (err) {
-                showToast('Failed to submit order', true);
+                console.error('Order error:', err);
+                showToast(err.message || 'Failed to submit order', true);
             }
         }
 
@@ -1302,49 +1392,143 @@
             formData.append('quantity', document.getElementById('prodQuantity').value);
             formData.append('location', document.getElementById('prodLocation').value);
             formData.append('description', document.getElementById('prodDesc').value);
+            if (currentUser && currentUser.id) {
+                formData.append('user_id', currentUser.id);
+            }
 
             const imageUrl = document.getElementById('prodImage').value;
             if (imageUrl) formData.append('image', imageUrl);
 
             try {
+                const headers = {};
+                if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
+
                 const res = await fetch('/api/v1/products/create', {
                     method: 'POST',
+                    headers: headers,
                     body: formData
                 });
 
+                const json = await res.json();
+                if (!res.ok || json.status === 'error') {
+                    throw new Error(json.error || json.message || 'Failed to create product listing');
+                }
+
                 closeModal('addProductModal');
-                showToast('Product successfully listed!');
-                loadProducts();
+                document.getElementById('addProductForm').reset();
+                showToast('Produce successfully listed!');
+                await loadProducts();
             } catch (err) {
-                showToast('Error adding product', true);
+                console.error('Add product error:', err);
+                showToast(err.message || 'Error adding product', true);
             }
         }
 
-        // Orders View Modal
-        async function openOrdersModal() {
+        // Orders View Dashboard Modal
+        function openOrdersModal() {
+            if (!currentUser) {
+                openAuthModal('login');
+                showToast('Please sign in to view your orders', true);
+                return;
+            }
+            loadOrders();
+            document.getElementById('ordersModal').classList.add('active');
+        }
+
+        async function loadOrders() {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;"></i> Loading orders...</td></tr>';
+
+            if (!currentUser || !currentUser.id) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 2rem;">Please sign in to view your orders</td></tr>';
+                return;
+            }
+
             try {
-                const url = currentUser ? `/api/v1/Orders/${currentUser.id}` : '/api/v1/Orders';
-                const res = await fetch(url);
+                const url = `/api/v1/Orders/${currentUser.id}`;
+                const headers = {};
+                if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
+
+                const res = await fetch(url, { headers });
                 const json = await res.json();
                 const orders = json.data || [];
-                
-                const tbody = document.getElementById('ordersTableBody');
+
                 if (orders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">No orders recorded yet</td></tr>';
-                } else {
-                    tbody.innerHTML = orders.map(o => `
+                    tbody.innerHTML = `
                         <tr>
-                            <td>#${o.id}</td>
-                            <td>Product #${o.product_id}</td>
-                            <td><span class="badge-status badge-pending">${o.status || 'Pending'}</span></td>
-                            <td>${o.orderDate || new Date().toLocaleDateString()}</td>
+                            <td colspan="7" style="text-align:center; color: var(--text-muted); padding: 3rem;">
+                                <i class="fa-solid fa-box-open" style="font-size: 2.5rem; color:#cbd5e1; margin-bottom:0.5rem; display:block;"></i>
+                                No orders found for your account (${escapeHtml(currentUser.username)}).
+                            </td>
                         </tr>
-                    `).join('');
+                    `;
+                } else {
+                    tbody.innerHTML = orders.map(o => {
+                        const isFarmerForProduct = currentUser && (currentUser.user_type === 'farmer' || currentUser.id === o.product_farmer_id);
+                        const isPending = (o.status === 'Pending');
+
+                        let actionHtml = '';
+                        if (isPending && isFarmerForProduct) {
+                            actionHtml = `<button class="btn btn-primary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;" onclick="confirmOrder(${o.id})"><i class="fa-solid fa-check"></i> Confirm Order</button>`;
+                        } else if (isPending) {
+                            actionHtml = `<span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-clock"></i> Awaiting Farmer Confirmation</span>`;
+                        } else {
+                            actionHtml = `<span style="font-size: 0.8rem; color: var(--primary); font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Approved</span>`;
+                        }
+
+                        let statusBadgeHtml = o.status === 'Confirmed' ? 
+                            `<span class="badge-status badge-active"><i class="fa-solid fa-check"></i> Confirmed</span>` :
+                            `<span class="badge-status badge-pending"><i class="fa-solid fa-hourglass-half"></i> Pending</span>`;
+
+                        return `
+                            <tr>
+                                <td style="font-weight:700;">#${o.id}</td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                                        <img src="${o.product_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'}" style="width:36px; height:36px; object-fit:cover; border-radius:6px;">
+                                        <span>${escapeHtml(o.product_name)}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>${escapeHtml(o.user_name || 'Customer')}</div>
+                                    <div style="font-size:0.75rem; color: var(--text-muted);">${escapeHtml(o.phone_number || '')}</div>
+                                </td>
+                                <td style="font-weight:700; color: var(--primary);">$${parseFloat(o.amount || 0).toFixed(2)}</td>
+                                <td style="font-size:0.85rem; color: var(--text-muted);">${o.orderDate}</td>
+                                <td>${statusBadgeHtml}</td>
+                                <td>${actionHtml}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error('Fetch orders error:', err);
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: #ef4444; padding: 2rem;">Failed to load orders from API</td></tr>';
+            }
+        }
+
+        // Farmer Order Confirmation
+        async function confirmOrder(orderId) {
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
+
+                const res = await fetch(`/api/v1/Orders/${orderId}/status`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ status: 'Confirmed' })
+                });
+
+                const json = await res.json();
+                if (!res.ok || json.status === 'error') {
+                    throw new Error(json.error || 'Failed to confirm order');
                 }
 
-                document.getElementById('ordersModal').classList.add('active');
+                showToast(`Order #${orderId} has been Confirmed!`);
+                await loadOrders();
             } catch (err) {
-                showToast('Could not fetch orders', true);
+                console.error('Confirm order error:', err);
+                showToast(err.message || 'Error confirming order', true);
             }
         }
 

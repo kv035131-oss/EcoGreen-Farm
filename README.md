@@ -1,86 +1,85 @@
-# EcoGreen - Farmer-to-Consumer Application
+# 🌾 EcoGreen — Direct Farmer-to-Consumer Platform
 
-This is a digital platform that connects farmers directly with consumers, bypassing intermediaries and reducing the overall cost of food products. 
-The platform allows farmers to list their produce, and consumers can purchase quality food at lower prices.
+**EcoGreen** is a full-stack digital web application designed to connect local farmers directly with consumers. By eliminating traditional middlemen and intermediaries, the platform empowers farmers to get fair prices for their produce while enabling consumers to purchase high-quality, fresh organic food at lower prices.
 
-## Table of Contents
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Technologies Used](#technologies-used)
-- [Contributing](#contributing)
-- [License](#license)
+---
 
-## Features
+## 🎯 Core Value Proposition
 
-- User registration and login with JWT authentication
-- Farmers can list their products with images
-- Consumers can browse and place orders for products
-- Payment Processing using Mpesa Express API
-- Data pagination for product listings
-- Swagger API documentation
-- Multi-user authentication with role-based access
-- Error handling and data validation
-- CI/CD integration for code quality checks
-- Human-readable date formatting
+* **Direct Market Access for Farmers:** Farmers can list their harvest (vegetables, fruits, honey, eggs, dairy, etc.) with custom pricing, images, stock quantities, and farm location details.
+* **Cost Savings for Consumers:** Buyers purchase farm-fresh produce directly from verified local growers.
+* **Order & Role-Based Workflow:** 
+  * Consumers browse products, select quantities, and place orders via **Mpesa Express STK Push** payment prompt.
+  * Orders start in **`Pending`** status until the listing farmer reviews and clicks **"Confirm Order"** on their private dashboard.
+* **Strict Order Privacy:** Each user (farmer or consumer) only sees order data relevant to their account.
 
-## Installation
+---
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/kv035131-oss/EcoGreen-Farm.git
-    ```
+## 👥 User Roles & Workflow
 
-2. Install the required dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+### 1. 🧑‍🌾 Farmers (Sellers)
+* **Account Registration:** Register as a `Farmer`.
+* **List Produce:** Publish fresh produce items specifying Name, Unit Price, Stock Quantity, Location, Image URL, and Farming Method Description.
+* **Farmer Order Dashboard:** View incoming orders specifically placed for their farm produce.
+* **Order Confirmation:** Review pending customer orders and click **"Confirm Order"** to approve them.
 
-3. Set up environment variables:
+### 2. 🛒 Consumers (Buyers)
+* **Account Registration:** Register as a `Consumer`.
+* **Explore Market:** Filter produce by category (*Vegetables*, *Fruits*, *Dairy & Eggs*, or *All*), search keywords, and view unit prices and stock.
+* **Order Produce:** Select quantity, provide delivery notes and Mpesa phone number.
+* **Private Orders Tracker:** Monitor private order status (*Pending* → *Confirmed*) on their personal dashboard.
 
-    Create a `.env` file in the root directory and add the following:
+---
 
-    ```env
-    SECRET_KEY=your_secret_key_here
-    CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-    CLOUDINARY_API_KEY=your_cloudinary_api_key
-    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-    SENDGRID_API_KEY=your_sendgrid_api_key
-    ```
+## 🛠️ Technology Stack
 
-## Usage
+| Layer | Technologies & Tools |
+| :--- | :--- |
+| **Backend Framework** | Python 3.x, Flask |
+| **Database & ORM** | SQLAlchemy (SQLite / PostgreSQL), Flask-Migrate |
+| **Authentication & Security** | Flask-JWT-Extended (JWT Bearer tokens), Werkzeug Password Hashing |
+| **Payments Integration** | Mpesa Express API (Safaricom STK Push integration) |
+| **Media & Assets** | Cloudinary API, Unsplash Presets |
+| **Frontend UI** | HTML5, Vanilla CSS, FontAwesome 6, Google Fonts (Inter & Outfit) |
 
-1. Run the application:
-    ```bash
-    python run.py
-    ```
+---
 
-2. Access the application in your web browser at `http://localhost:5000`.
+## 🔌 API Endpoints Summary
 
-3. Register as a farmer or consumer to start using the platform.
+### Authentication & Users
+* `POST /api/v1/User/create` — Register a new account (`farmer` or `consumer`) and issue a JWT token.
+* `POST /api/v1/Login` — Authenticate credentials and retrieve access token.
+* `GET /api/v1/user/profile` — Fetch profile details of the authenticated user.
 
-## API Endpoints
+### Products & Produce Market
+* `GET /api/v1/products` — Retrieve all available farm produce sorted by newest listing first.
+* `POST /api/v1/products/create` — Publish a new farm produce listing.
+* `GET /api/v1/products/<id>` — View detailed info, ratings, and reviews for a single produce item.
+* `POST /api/v1/Search` — Search produce by keywords.
 
-- POST `/api/v1/User/create`: Register as a new user (farmer or consumer).
-- POST `/api/v1/Login`: Log in and receive an access token for authentication.
-- POST `/api/v1/products/create`: Create a new product listing (farmers only).
-- GET `/api/v1/products`: Get a paginated list of available product listings.
-- POST `/api/v1/Orders/create`: Place an order for a product (consumers only).
-- GET `/api/v1/Orders`: Get a list of orders.
+### Orders & Payments
+* `POST /api/v1/Orders/create` — Place a new customer produce order.
+* `GET /api/v1/Orders/<user_id>` — Retrieve private role-filtered orders for the logged-in user.
+* `POST /api/v1/Orders/<order_id>/status` — Farmer endpoint to update order status to `Confirmed`.
+* `POST /pay` — Trigger Mpesa Express STK Push payment prompt to customer phone.
 
-## Technologies Used
+---
 
-- Python and Flask framework for the backend.
-- Flask-JWT-Extended for JWT authentication.
-- SQLAlchemy for database management.
-- Cloudinary for image uploads and storage.
-- Frontend technologies (HTML, CSS, JavaScript) for the user interface.
+## ⚡ How to Run Locally
 
-## Contributing
+1. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Start Application Server:**
+   ```bash
+   python run.py
+   ```
+3. **Access Application:** Open `http://localhost:5000` in your web browser.
 
-Contributions to the EcoGreen Farmer-to-Consumer Platform are welcome! Please follow standard guidelines for contributing to open-source projects.
+---
 
-## License
+## 📜 License
 
-This project is licensed under the [MIT License](https://github.com/kv035131-oss/EcoGreen-Farm/blob/main/LICENSE).
+This project is licensed under the [MIT License](LICENSE).
+

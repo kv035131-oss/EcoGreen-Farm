@@ -19,12 +19,12 @@ def seed_data():
             db.session.commit()
 
         if Product.query.count() == 0:
-            p1 = Product(name='Fresh Organic Tomatoes (10kg)', price=15.99, description='Farm fresh vine-ripened organic tomatoes grown without synthetic pesticides.', image='https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500', location='Green Valley Farm, Nakuru', quantity=50)
-            p2 = Product(name='Organic Crisp Carrots (5kg)', price=8.50, description='Crisp sweet orange carrots harvested daily.', image='https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500', location='Highland Organics, Eldoret', quantity=30)
-            p3 = Product(name='Raw Pure Honey (1 Litre)', price=12.00, description='100% pure raw unprocessed wildflower honey direct from hives.', image='https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500', location='Bee Haven Apiary, Nyeri', quantity=20)
-            p4 = Product(name='Farm Fresh Free-Range Eggs (Tray of 30)', price=6.99, description='Pasture raised free-range organic eggs with rich golden yolks.', image='https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500', location='Sunny Hill Poultry, Naivasha', quantity=40)
-            p5 = Product(name='Fresh Organic Spinach (Bunch)', price=3.50, description='Nutrient-rich dark green fresh organic spinach leaves.', image='https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=500', location='Riverside Gardens, Kiambu', quantity=60)
-            p6 = Product(name='Premium Hass Avocados (5 Pack)', price=9.99, description='Creamy rich Hass avocados grown naturally in volcanic soil.', image='https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=500', location='Mount Kenya Orchards, Meru', quantity=45)
+            p1 = Product(user_id=1, name='Fresh Organic Tomatoes (10kg)', price=15.99, description='Farm fresh vine-ripened organic tomatoes grown without synthetic pesticides.', image='https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500', location='Green Valley Farm, Nakuru', quantity=50)
+            p2 = Product(user_id=1, name='Organic Crisp Carrots (5kg)', price=8.50, description='Crisp sweet orange carrots harvested daily.', image='https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500', location='Highland Organics, Eldoret', quantity=30)
+            p3 = Product(user_id=1, name='Raw Pure Honey (1 Litre)', price=12.00, description='100% pure raw unprocessed wildflower honey direct from hives.', image='https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500', location='Bee Haven Apiary, Nyeri', quantity=20)
+            p4 = Product(user_id=1, name='Farm Fresh Free-Range Eggs (Tray of 30)', price=6.99, description='Pasture raised free-range organic eggs with rich golden yolks.', image='https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500', location='Sunny Hill Poultry, Naivasha', quantity=40)
+            p5 = Product(user_id=1, name='Fresh Organic Spinach (Bunch)', price=3.50, description='Nutrient-rich dark green fresh organic spinach leaves.', image='https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=500', location='Riverside Gardens, Kiambu', quantity=60)
+            p6 = Product(user_id=1, name='Premium Hass Avocados (5 Pack)', price=9.99, description='Creamy rich Hass avocados grown naturally in volcanic soil.', image='https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=500', location='Mount Kenya Orchards, Meru', quantity=45)
             db.session.add_all([p1, p2, p3, p4, p5, p6])
             db.session.commit()
 
