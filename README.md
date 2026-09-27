@@ -177,8 +177,117 @@ print("Response:", res.json())
 
 ---
 
+## 📊 Connecting Power BI
+
+EcoGreen features a dedicated Admin Analytics module under `/api/v1/admin/analytics` optimized for **Power BI Desktop** via its native **Web (REST API)** data source. 
+
+### 1. Admin Credentials & Access Control
+- Default Admin Account: `admin` (or `admin@ecogreen.com`)
+- Default Admin Password: `admin123`
+- Create / Update Admin Account via CLI:
+  ```bash
+  flask create-admin --username admin --email admin@ecogreen.com --password admin123
+  ```
+
+### 2. How to Connect in Power BI Desktop
+1. Open **Power BI Desktop**.
+2. Click **Get Data** → **Web** (under Common data sources).
+3. Select **Basic** radio button, enter the target analytics endpoint URL (e.g. `http://localhost:5000/api/v1/admin/analytics/summary`), and click **OK**.
+4. When prompted for Access Credentials:
+   - Select **Basic** on the left menu.
+   - Enter User name: `admin` (or `admin@ecogreen.com`)
+   - Enter Password: `admin123`
+   - Select Level: `http://localhost:5000/api/v1/admin/analytics`
+   - Click **Connect**.
+5. Power BI will parse the flat JSON response directly into a data table.
+6. **Repeat step 2-4** for each analytics endpoint. Add them as separate Power BI queries (`Summary`, `OrdersOverTime`, `TopFarmers`, `TopProducts`, `CategoryBreakdown`, `UserGrowth`), then build relationships and visual dashboards inside Power BI's data model.
+
+---
+
+### 🧪 Admin Analytics Endpoint `curl` Examples (Basic Auth)
+
+#### 1. Platform Summary KPIs
+```bash
+curl -u "admin:admin123" http://localhost:5000/api/v1/admin/analytics/summary
+```
+**Response:**
+```json
+{
+  "confirmed_orders": 10,
+  "paid_orders": 12,
+  "pending_orders": 5,
+  "total_consumers": 25,
+  "total_farmers": 8,
+  "total_orders": 15,
+  "total_products_listed": 18,
+  "total_revenue": 450.0,
+  "total_transactions_failed": 1,
+  "total_transactions_success": 12,
+  "unpaid_orders": 3
+}
+```
+
+#### 2. Orders Over Time (Daily / Weekly / Monthly)
+```bash
+curl -u "admin:admin123" "http://localhost:5000/api/v1/admin/analytics/orders-over-time?interval=day"
+```
+**Response:**
+```json
+[
+  { "period": "2026-09-27", "order_count": 15, "revenue": 450.0 }
+]
+```
+
+#### 3. Top Farmers by Revenue
+```bash
+curl -u "admin:admin123" "http://localhost:5000/api/v1/admin/analytics/top-farmers?limit=10"
+```
+**Response:**
+```json
+[
+  { "farmer_id": 2, "farmer_name": "ajay_farmer", "total_orders": 15, "total_revenue": 450.0 }
+]
+```
+
+#### 4. Top Performing Produce
+```bash
+curl -u "admin:admin123" "http://localhost:5000/api/v1/admin/analytics/top-products?limit=10"
+```
+**Response:**
+```json
+[
+  { "category": "Vegetables", "product_id": 1, "product_name": "Fresh Organic Tomatoes", "units_sold": 10, "revenue": 150.0 }
+]
+```
+
+#### 5. Produce Category Breakdown
+```bash
+curl -u "admin:admin123" http://localhost:5000/api/v1/admin/analytics/category-breakdown
+```
+**Response:**
+```json
+[
+  { "category": "Vegetables", "order_count": 10, "revenue": 300.0 },
+  { "category": "Dairy & Eggs", "order_count": 5, "revenue": 150.0 }
+]
+```
+
+#### 6. User Signup Growth over Time
+```bash
+curl -u "admin:admin123" "http://localhost:5000/api/v1/admin/analytics/user-growth?interval=day"
+```
+**Response:**
+```json
+[
+  { "new_consumers": 25, "new_farmers": 8, "period": "2026-09-27" }
+]
+```
+
+---
+
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
+
 
 

@@ -15,6 +15,7 @@ class Product(db.Model):
     image = db.Column(db.Text)  # Image URL or public_id
     location = db.Column(db.String(150))
     quantity = db.Column(db.Integer, nullable=False)
+    category = db.Column(db.String(100), nullable=True, default='Vegetables')
 
     user = db.relationship('User', backref=db.backref('products', lazy=True))
 
@@ -27,7 +28,8 @@ class Product(db.Model):
             'description': self.description,
             'image': self.image,
             'location': self.location,
-            'quantity': self.quantity
+            'quantity': self.quantity,
+            'category': self.category or 'Vegetables'
         }
 
 class User(db.Model):
@@ -36,8 +38,10 @@ class User(db.Model):
     phone_number = db.Column(db.String(50), nullable=True)
     password = db.Column(db.String(200))
     email = db.Column(db.String(200), unique=True)
-    user_type = db.Column(db.String(50))
+    user_type = db.Column(db.String(50)) # farmer, consumer, admin
     status = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
     def repr(self):
         return f'<User {self.id}>'
     
