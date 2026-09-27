@@ -325,25 +325,43 @@ def view_all_user():
 
 @product_routes.route('/api/v1/User/create', methods=['POST'])
 def create_user():
-    data = request.json
+    data = request.json or {}
 
-    username=data['username']
-    phone_number=data['phone_number']
-    password=data['password']
-    email=data['email']                    
-    user_type=data['user_type']
-    status='Active'
-    password_harsh= generate_password_hash(password)
+    username = data.get('username')
+    phone_number = data.get('phone_number', 0)
+    password = data.get('password')
+    email = data.get('email', f"{username.lower().replace(' ', '')}@example.com" if username else "user@example.com")                    
+    user_type = data.get('user_type', 'consumer')
+    status = 'Active'
+    
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
+
     if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exist'}), 409
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email already exist'}), 409
-    user= User(username=username, email=email, password=password_harsh, 
-               user_type=user_type,status=status,phone_number=phone_number)
+        return jsonify({'error': 'Username already exists'}), 409
+    if email and User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 409
+
+    password_harsh = generate_password_hash(password)
+    user = User(username=username, email=email, password=password_harsh, 
+                user_type=user_type, status=status, phone_number=phone_number)
 
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'User created successfully'}), 201
+    
+    access_token = generate_token(user)
+    return jsonify({
+        'message': 'User created successfully',
+        'access-token': access_token,
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'user_type': user.user_type,
+            'phone_number': user.phone_number,
+            'status': user.status
+        }
+    }), 201
 
 @product_routes.route('/api/v1/Orders/create', methods=['POST'])
 @jwt_required(optional=True)
@@ -424,19 +442,50 @@ def search():
 
 @product_routes.route('/api/v1/Login', methods=['POST'])
 def login():
-    username =request.json["username"]
-    password =request.json["password"]
-    user=User.query.filter_by(username=username).first()
-    if  user and check_password_hash(user.password, password):
-        access_token=generate_token(user)
+    data = request.json or {}
+    username = data.get("username")
+    password = data.get("password")
+    user = User.query.filter_by(username=username).first()
+    if user and check_password_hash(user.password, password):
+        access_token = generate_token(user)
         return jsonify({
-            "access-token" : access_token
+            "access-token": access_token,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "user_type": user.user_type,
+                "phone_number": user.phone_number,
+                "status": user.status
+            }
         }), 200
     else:
         return jsonify({
-            'error' :"Invalid credentials",
-        }),401
+            'error': "Invalid credentials",
+        }), 401
 
+@product_routes.route('/api/v1/user/profile', methods=['GET'])
+@jwt_required(optional=True)
+def get_user_profile():
+    try:
+        current_user_id = get_jwt_identity()
+        if not current_user_id:
+            return jsonify({'error': 'Not logged in'}), 401
+        user = User.query.get(current_user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'user_type': user.user_type,
+                'phone_number': user.phone_number,
+                'status': user.status
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 def generate_token(user):

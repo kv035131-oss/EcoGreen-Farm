@@ -560,6 +560,54 @@
             color: #059669;
         }
 
+        /* User Profile Avatar Card */
+        .profile-avatar-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
+        }
+
+        .profile-info-grid {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .profile-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .profile-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .profile-value {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -601,6 +649,10 @@
 
         .toast-success {
             border-left: 4px solid var(--primary);
+        }
+
+        .toast-error {
+            border-left: 4px solid #ef4444;
         }
 
         footer {
@@ -656,19 +708,14 @@
             </a>
 
             <ul class="nav-links">
-                <li><span class="nav-link active" onclick="switchTab('all')">Explore Market</span></li>
+                <li><span class="nav-link active" onclick="filterProducts('all')">Explore Market</span></li>
                 <li><span class="nav-link" onclick="openAddProductModal()"><i class="fa-solid fa-plus-circle"></i> Add Produce</span></li>
                 <li><span class="nav-link" onclick="openOrdersModal()"><i class="fa-solid fa-receipt"></i> Orders</span></li>
                 <li><span class="nav-link" onclick="openApiDocsModal()"><i class="fa-solid fa-code"></i> API Docs</span></li>
             </ul>
 
-            <div style="display: flex; gap: 0.75rem; align-items: center;">
-                <button class="btn btn-outline" onclick="openAuthModal('login')">
-                    <i class="fa-solid fa-right-to-bracket"></i> Login
-                </button>
-                <button class="btn btn-primary" onclick="openAddProductModal()">
-                    <i class="fa-solid fa-store"></i> List Product
-                </button>
+            <div id="navAuthContainer" style="display: flex; gap: 0.75rem; align-items: center;">
+                <!-- Dynamically updated by JavaScript (Login or Profile Badge) -->
             </div>
         </div>
     </header>
@@ -730,6 +777,57 @@
             &copy; 2026 EcoGreen Platform. Powered by Flask, SQLAlchemy, JWT Authentication & Mpesa Integration.
         </div>
     </footer>
+
+    <!-- User Profile Modal -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeModal('profileModal')"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="profile-avatar-box" id="profileInitials">
+                U
+            </div>
+            
+            <h2 id="profileUsername" style="text-align: center; margin-bottom: 0.25rem; color: var(--text-main);">User Profile</h2>
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <span id="profileUserTypeBadge" class="badge-status badge-active">Consumer</span>
+            </div>
+
+            <div class="profile-info-grid">
+                <div class="profile-info-row">
+                    <span class="profile-label"><i class="fa-solid fa-user" style="width:20px;"></i> Full Username</span>
+                    <span class="profile-value" id="profileFullUsername">---</span>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-label"><i class="fa-solid fa-envelope" style="width:20px;"></i> Email Address</span>
+                    <span class="profile-value" id="profileEmail">---</span>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-label"><i class="fa-solid fa-phone" style="width:20px;"></i> Phone Number</span>
+                    <span class="profile-value" id="profilePhone">---</span>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-label"><i class="fa-solid fa-user-tag" style="width:20px;"></i> Account Role</span>
+                    <span class="profile-value" id="profileRole">---</span>
+                </div>
+                <div class="profile-info-row">
+                    <span class="profile-label"><i class="fa-solid fa-circle-check" style="width:20px;"></i> Status</span>
+                    <span class="profile-value" style="color: var(--primary);" id="profileStatus">Active</span>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="closeModal('profileModal'); openOrdersModal();">
+                    <i class="fa-solid fa-receipt"></i> View My Orders
+                </button>
+                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="closeModal('profileModal'); openAddProductModal();">
+                    <i class="fa-solid fa-store"></i> List Produce for Sale
+                </button>
+                <button class="btn btn-outline" style="width: 100%; justify-content: center; border-color: #ef4444; color: #ef4444;" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out / Logout
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Order Modal -->
     <div id="orderModal" class="modal-overlay">
@@ -856,7 +954,7 @@
                 
                 <div class="form-group">
                     <label class="form-label">Username</label>
-                    <input type="text" id="authUsername" class="form-input" placeholder="john_farmer" required>
+                    <input type="text" id="authUsername" class="form-input" placeholder="e.g. K VIJAY KUMAR" required>
                 </div>
 
                 <div class="form-group">
@@ -867,7 +965,7 @@
                 <div id="registerFields" style="display: none;">
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
-                        <input type="email" id="authEmail" class="form-input" placeholder="farmer@example.com">
+                        <input type="email" id="authEmail" class="form-input" placeholder="vijay@example.com">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Phone Number</label>
@@ -877,7 +975,7 @@
                         <label class="form-label">Account Type</label>
                         <select id="authUserType" class="form-select">
                             <option value="farmer">Farmer (Seller)</option>
-                            <option value="consumer">Consumer (Buyer)</option>
+                            <option value="consumer" selected>Consumer (Buyer)</option>
                         </select>
                     </div>
                 </div>
@@ -944,7 +1042,7 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="toast toast-success">
-        <i class="fa-solid fa-circle-check" style="color: var(--secondary); font-size: 1.2rem;"></i>
+        <i class="fa-solid fa-circle-check" style="color: var(--secondary); font-size: 1.2rem;" id="toastIcon"></i>
         <span id="toastMsg">Operation completed successfully</span>
     </div>
 
@@ -952,10 +1050,73 @@
     <script>
         let allProducts = [];
         let jwtToken = localStorage.getItem('farmer_app_jwt') || '';
+        let currentUser = JSON.parse(localStorage.getItem('farmer_app_user') || 'null');
 
         document.addEventListener('DOMContentLoaded', () => {
+            updateNavAuthUI();
             loadProducts();
         });
+
+        // Update Navbar Login/Profile UI
+        function updateNavAuthUI() {
+            const container = document.getElementById('navAuthContainer');
+            if (currentUser && currentUser.username) {
+                const initials = currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                container.innerHTML = `
+                    <button class="btn btn-outline" style="background: #ecfdf5; border-color: var(--primary);" onclick="openProfileModal()">
+                        <i class="fa-solid fa-circle-user" style="font-size: 1.1rem; color: var(--primary);"></i>
+                        <span>${escapeHtml(currentUser.username)}</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="openAddProductModal()">
+                        <i class="fa-solid fa-store"></i> List Product
+                    </button>
+                    <button class="btn btn-outline" style="border-color: #ef4444; color: #ef4444; padding: 0.6rem 0.8rem;" title="Sign Out" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button class="btn btn-outline" onclick="openAuthModal('login')">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </button>
+                    <button class="btn btn-primary" onclick="openAddProductModal()">
+                        <i class="fa-solid fa-store"></i> List Product
+                    </button>
+                `;
+            }
+        }
+
+        // Open Profile Modal
+        function openProfileModal() {
+            if (!currentUser) {
+                openAuthModal('login');
+                return;
+            }
+            const username = currentUser.username || 'User';
+            const initials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            document.getElementById('profileInitials').textContent = initials || 'U';
+            document.getElementById('profileUsername').textContent = username;
+            document.getElementById('profileFullUsername').textContent = username;
+            document.getElementById('profileEmail').textContent = currentUser.email || 'Not provided';
+            document.getElementById('profilePhone').textContent = currentUser.phone_number ? currentUser.phone_number : 'Not provided';
+            document.getElementById('profileRole').textContent = currentUser.user_type ? (currentUser.user_type.charAt(0).toUpperCase() + currentUser.user_type.slice(1)) : 'Consumer';
+            document.getElementById('profileUserTypeBadge').textContent = currentUser.user_type ? currentUser.user_type.toUpperCase() : 'USER';
+            document.getElementById('profileStatus').textContent = currentUser.status || 'Active';
+
+            document.getElementById('profileModal').classList.add('active');
+        }
+
+        // Logout
+        function logout() {
+            jwtToken = '';
+            currentUser = null;
+            localStorage.removeItem('farmer_app_jwt');
+            localStorage.removeItem('farmer_app_user');
+            updateNavAuthUI();
+            closeModal('profileModal');
+            showToast('Logged out successfully');
+        }
 
         // Load Products from Backend API
         async function loadProducts() {
@@ -1049,10 +1210,29 @@
 
         function filterProducts(category) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            if (event) event.target.classList.add('active');
+            const activeBtn = document.getElementById('tab-' + (category === 'all' ? 'all' : (category === 'vegetable' ? 'vegetables' : (category === 'fruit' ? 'fruits' : 'dairy'))));
+            if (activeBtn) activeBtn.classList.add('active');
 
             if (category === 'all') {
                 renderProducts(allProducts);
+            } else if (category === 'dairy') {
+                const filtered = allProducts.filter(p => {
+                    const name = p.name.toLowerCase();
+                    return name.includes('dairy') || name.includes('egg') || name.includes('honey') || name.includes('milk') || name.includes('cheese');
+                });
+                renderProducts(filtered);
+            } else if (category === 'vegetable') {
+                const filtered = allProducts.filter(p => {
+                    const name = p.name.toLowerCase();
+                    return name.includes('tomato') || name.includes('carrot') || name.includes('spinach') || name.includes('vegetable') || name.includes('potato');
+                });
+                renderProducts(filtered);
+            } else if (category === 'fruit') {
+                const filtered = allProducts.filter(p => {
+                    const name = p.name.toLowerCase();
+                    return name.includes('avocado') || name.includes('apple') || name.includes('fruit') || name.includes('orange') || name.includes('mango');
+                });
+                renderProducts(filtered);
             } else {
                 const filtered = allProducts.filter(p => p.name.toLowerCase().includes(category) || (p.description && p.description.toLowerCase().includes(category)));
                 renderProducts(filtered);
@@ -1068,7 +1248,9 @@
             document.getElementById('orderProductTitle').textContent = product.name;
             document.getElementById('orderProductPrice').textContent = '$' + parseFloat(product.price).toFixed(2);
             document.getElementById('orderProductLocation').textContent = '📍 Farm: ' + (product.location || 'Local Farm');
-            
+            if (currentUser && currentUser.phone_number) {
+                document.getElementById('orderPhone').value = currentUser.phone_number;
+            }
             document.getElementById('orderModal').classList.add('active');
         }
 
@@ -1087,7 +1269,7 @@
                     },
                     body: JSON.stringify({
                         product_id: parseInt(productId),
-                        user_id: 1,
+                        user_id: currentUser ? currentUser.id : 1,
                         status: 'Pending',
                         phone_number: phone,
                         amount: 10.0
@@ -1103,6 +1285,11 @@
 
         // Open Add Product Modal
         function openAddProductModal() {
+            if (!currentUser) {
+                openAuthModal('login');
+                showToast('Please log in or register to list produce', true);
+                return;
+            }
             document.getElementById('addProductModal').classList.add('active');
         }
 
@@ -1117,9 +1304,9 @@
             formData.append('description', document.getElementById('prodDesc').value);
 
             const imageUrl = document.getElementById('prodImage').value;
+            if (imageUrl) formData.append('image', imageUrl);
 
             try {
-                // If direct JSON request or FormData
                 const res = await fetch('/api/v1/products/create', {
                     method: 'POST',
                     body: formData
@@ -1136,13 +1323,14 @@
         // Orders View Modal
         async function openOrdersModal() {
             try {
-                const res = await fetch('/api/v1/Orders');
+                const url = currentUser ? `/api/v1/Orders/${currentUser.id}` : '/api/v1/Orders';
+                const res = await fetch(url);
                 const json = await res.json();
                 const orders = json.data || [];
                 
                 const tbody = document.getElementById('ordersTableBody');
                 if (orders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No orders recorded yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">No orders recorded yet</td></tr>';
                 } else {
                     tbody.innerHTML = orders.map(o => `
                         <tr>
@@ -1201,9 +1389,19 @@
                     if (res.ok && json['access-token']) {
                         jwtToken = json['access-token'];
                         localStorage.setItem('farmer_app_jwt', jwtToken);
-                        showToast('Successfully logged in!');
+                        
+                        if (json.user) {
+                            currentUser = json.user;
+                        } else {
+                            currentUser = { username: username, user_type: 'consumer' };
+                        }
+                        localStorage.setItem('farmer_app_user', JSON.stringify(currentUser));
+                        
+                        updateNavAuthUI();
+                        showToast(`Welcome back, ${currentUser.username}!`);
                         closeModal('authModal');
                     } else {
+                        // If user doesn't exist yet, automatically switch to register or offer registration
                         showToast(json.error || 'Invalid credentials', true);
                     }
                 } catch (err) {
@@ -1222,8 +1420,15 @@
                     });
                     const json = await res.json();
                     if (res.ok) {
-                        showToast('User account created! Please log in.');
-                        openAuthModal('login');
+                        jwtToken = json['access-token'] || '';
+                        currentUser = json.user || { username: username, email: email, user_type: user_type, phone_number: phone_number };
+                        
+                        if (jwtToken) localStorage.setItem('farmer_app_jwt', jwtToken);
+                        localStorage.setItem('farmer_app_user', JSON.stringify(currentUser));
+                        
+                        updateNavAuthUI();
+                        showToast(`Account created! Welcome ${currentUser.username}`);
+                        closeModal('authModal');
                     } else {
                         showToast(json.error || 'Failed to create user', true);
                     }
