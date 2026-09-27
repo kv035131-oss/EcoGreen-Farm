@@ -1074,6 +1074,75 @@
         </div>
     </div>
 
+    <!-- Admin Analytics & Power BI Report Modal -->
+    <div id="analyticsModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 900px; width: 95%;">
+            <button class="modal-close" onclick="closeModal('analyticsModal')"><i class="fa-solid fa-xmark"></i></button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="color: #4f46e5; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-chart-pie"></i> Admin Analytics & Power BI Dashboard
+                </h2>
+                <span class="badge-status" style="background: #e0e7ff; color: #4338ca; font-size: 0.8rem;">
+                    <i class="fa-solid fa-shield-halved"></i> Platform Owner Access
+                </span>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #166534; font-weight: 600;">Total Revenue</div>
+                    <div id="kpiRevenue" style="font-size: 1.6rem; font-weight: 800; color: #15803d; margin-top: 0.25rem;">$0.00</div>
+                </div>
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #1e40af; font-weight: 600;">Total Orders</div>
+                    <div id="kpiOrders" style="font-size: 1.6rem; font-weight: 800; color: #1d4ed8; margin-top: 0.25rem;">0</div>
+                </div>
+                <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 12px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #92400e; font-weight: 600;">Paid / Unpaid</div>
+                    <div id="kpiPaymentStatus" style="font-size: 1.3rem; font-weight: 800; color: #b45309; margin-top: 0.25rem;">0 / 0</div>
+                </div>
+                <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 12px; padding: 1rem; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #6b21a8; font-weight: 600;">Farmers & Buyers</div>
+                    <div id="kpiUsers" style="font-size: 1.3rem; font-weight: 800; color: #7e22ce; margin-top: 0.25rem;">0 / 0</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Analytics Details -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+                        <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i> Top Farmers by Sales
+                    </h4>
+                    <div id="topFarmersList" style="font-size: 0.85rem; color: var(--text-muted);">Loading...</div>
+                </div>
+                <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
+                        <i class="fa-solid fa-leaf" style="color: var(--primary);"></i> Produce Sales by Category
+                    </h4>
+                    <div id="categoryBreakdownList" style="font-size: 0.85rem; color: var(--text-muted);">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Power BI Web Connection URL Box -->
+            <div style="background: #eef2ff; border: 1px dashed #6366f1; border-radius: 12px; padding: 1rem;">
+                <div style="font-weight: 700; color: #3730a3; font-size: 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-plug"></i> Direct Power BI Connection Endpoints (Basic Auth)
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-outline" style="background: white; font-size: 0.75rem; padding: 0.35rem 0.75rem;" onclick="copyPowerBIUrl('/summary')">
+                        <i class="fa-solid fa-copy"></i> Summary KPIs REST URL
+                    </button>
+                    <button class="btn btn-outline" style="background: white; font-size: 0.75rem; padding: 0.35rem 0.75rem;" onclick="copyPowerBIUrl('/orders-over-time?interval=day')">
+                        <i class="fa-solid fa-copy"></i> Sales Over Time URL
+                    </button>
+                    <button class="btn btn-outline" style="background: white; font-size: 0.75rem; padding: 0.35rem 0.75rem;" onclick="copyPowerBIUrl('/top-farmers')">
+                        <i class="fa-solid fa-copy"></i> Top Farmers URL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast toast-success">
         <i class="fa-solid fa-circle-check" style="color: var(--secondary); font-size: 1.2rem;" id="toastIcon"></i>
@@ -1094,9 +1163,16 @@
         // Update Navbar Login/Profile UI
         function updateNavAuthUI() {
             const container = document.getElementById('navAuthContainer');
+            const isAdmin = currentUser && (currentUser.user_type === 'admin' || currentUser.username === 'admin');
+
             if (currentUser && currentUser.username) {
                 const initials = currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                 container.innerHTML = `
+                    ${isAdmin ? `
+                        <button class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5, #6366f1); border: none;" onclick="openAnalyticsModal()">
+                            <i class="fa-solid fa-chart-pie"></i> Power BI Analytics
+                        </button>
+                    ` : ''}
                     <button class="btn btn-outline" style="background: #ecfdf5; border-color: var(--primary);" onclick="openProfileModal()">
                         <i class="fa-solid fa-circle-user" style="font-size: 1.1rem; color: var(--primary);"></i>
                         <span>${escapeHtml(currentUser.username)}</span>
@@ -1118,6 +1194,72 @@
                     </button>
                 `;
             }
+        }
+
+        // Open Admin Analytics & Power BI Dashboard Modal
+        async function openAnalyticsModal() {
+            if (!currentUser || (currentUser.user_type !== 'admin' && currentUser.username !== 'admin')) {
+                showToast('Admin authorization required to access platform analytics', true);
+                return;
+            }
+
+            document.getElementById('analyticsModal').classList.add('active');
+
+            try {
+                const headers = { 'Authorization': 'Basic ' + btoa('admin:admin123') };
+                if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
+
+                const [summaryRes, farmersRes, catRes] = await Promise.all([
+                    fetch('/api/v1/admin/analytics/summary', { headers }),
+                    fetch('/api/v1/admin/analytics/top-farmers', { headers }),
+                    fetch('/api/v1/admin/analytics/category-breakdown', { headers })
+                ]);
+
+                if (summaryRes.ok) {
+                    const s = await summaryRes.json();
+                    document.getElementById('kpiRevenue').textContent = '$' + parseFloat(s.total_revenue || 0).toFixed(2);
+                    document.getElementById('kpiOrders').textContent = s.total_orders || 0;
+                    document.getElementById('kpiPaymentStatus').textContent = `${s.paid_orders || 0} Paid / ${s.unpaid_orders || 0} Unpaid`;
+                    document.getElementById('kpiUsers').textContent = `${s.total_farmers || 0} Farmers / ${s.total_consumers || 0} Buyers`;
+                }
+
+                if (farmersRes.ok) {
+                    const farmers = await farmersRes.json();
+                    if (Array.isArray(farmers) && farmers.length > 0) {
+                        document.getElementById('topFarmersList').innerHTML = farmers.map(f => `
+                            <div style="display:flex; justify-content:space-between; padding: 0.4rem 0; border-bottom: 1px solid #e2e8f0;">
+                                <span><strong>${escapeHtml(f.farmer_name)}</strong> (${f.total_orders} orders)</span>
+                                <span style="font-weight:700; color:var(--primary);">$${parseFloat(f.total_revenue).toFixed(2)}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        document.getElementById('topFarmersList').textContent = 'No orders recorded yet.';
+                    }
+                }
+
+                if (catRes.ok) {
+                    const categories = await catRes.json();
+                    if (Array.isArray(categories) && categories.length > 0) {
+                        document.getElementById('categoryBreakdownList').innerHTML = categories.map(c => `
+                            <div style="display:flex; justify-content:space-between; padding: 0.4rem 0; border-bottom: 1px solid #e2e8f0;">
+                                <span><strong>${escapeHtml(c.category)}</strong></span>
+                                <span style="font-weight:700; color:#4f46e5;">$${parseFloat(c.revenue).toFixed(2)} (${c.order_count} orders)</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        document.getElementById('categoryBreakdownList').textContent = 'No sales category data yet.';
+                    }
+                }
+            } catch (err) {
+                console.error('Analytics load error:', err);
+                showToast('Failed to load analytics data', true);
+            }
+        }
+
+        function copyPowerBIUrl(path) {
+            const fullUrl = window.location.origin + '/api/v1/admin/analytics' + path;
+            navigator.clipboard.writeText(fullUrl);
+            showToast('Copied Power BI Web REST URL to clipboard: ' + fullUrl);
         }
 
         // Open Profile Modal
