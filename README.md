@@ -79,7 +79,106 @@
 
 ---
 
+---
+
+## 💳 Razorpay Payment Integration
+
+EcoGreen integrates **Razorpay** for payment processing. Payment state (`Unpaid` → `Paid`) is tracked independently from order status (`Pending` → `Confirmed`). An order is marked `Paid` only after a verified server-side Razorpay signature check or webhook event.
+
+### 1. Environment & Configuration
+Create a `.env` file in the project root:
+```env
+RAZORPAY_KEY_ID=rzp_test_your_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_secret_key
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_key
+RAZORPAY_SIMULATE=true
+```
+
+* **`RAZORPAY_SIMULATE=true`**: Enables simulated instant payments for local testing without active Razorpay API keys.
+* Set `RAZORPAY_SIMULATE=false` when using live or test sandbox credentials from Razorpay.
+
+### 2. Getting Test API Keys from Razorpay Dashboard
+1. Sign up / Log in to [Razorpay Dashboard](https://dashboard.razorpay.com/).
+2. Switch to **Test Mode** using the toggle in the top navbar.
+3. Go to **Account & Settings** → **API Keys** under Website and App settings.
+4. Click **Generate Test Key** and copy `Key ID` and `Key Secret` into your `.env` file.
+5. (Optional Webhooks): Go to **Settings** → **Webhooks** → **Add New Webhook**, enter your webhook URL (`http://<your-domain>/api/v1/payments/webhook`), select `payment.captured`, and copy the secret.
+
+### 3. Razorpay Test Sandbox Credentials
+When testing through Razorpay Checkout modal in Test Mode, use these details:
+
+| Payment Method | Test Card / Info | Expiry / CVV / Details |
+| :--- | :--- | :--- |
+| **Card (Success)** | `4111 1111 1111 1111` | Any future date (e.g. `12/30`), CVV `123`, OTP `123456` |
+| **Card (Failure)** | `4000 0000 0000 0002` | Any future date, CVV `123` |
+| **UPI / VPA** | `success@razorpay` | Auto-approves payment |
+
+---
+
+## 🧪 Testing Endpoints (curl / Postman)
+
+### 1. Create Payment Order (`POST /pay`)
+```bash
+curl -X POST http://localhost:5000/pay \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_CONSUMER_JWT_TOKEN>" \
+  -d '{"order_id": 1}'
+```
+* **Response (Live Mode):** Returns `razorpay_order_id`, `amount` (in paise), and `key_id`.
+* **Response (Simulated Mode):** Immediately updates Transaction & Order status to `Paid` and returns `simulate: true`.
+
+### 2. Verify Signature (`POST /api/v1/payments/verify`)
+```bash
+curl -X POST http://localhost:5000/api/v1/payments/verify \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_CONSUMER_JWT_TOKEN>" \
+  -d '{
+    "razorpay_order_id": "order_1234567890",
+    "razorpay_payment_id": "pay_1234567890",
+    "razorpay_signature": "generated_hmac_sha256_signature"
+  }'
+```
+
+### 3. Simulate Webhook with Valid HMAC Signature (`POST /api/v1/payments/webhook`)
+You can test the server webhook endpoint locally using Python to generate a valid HMAC signature:
+
+**Python Script (`simulate_webhook.py`):**
+```python
+import hmac, hashlib, requests, json
+
+webhook_secret = "your_webhook_secret_key" # matches RAZORPAY_WEBHOOK_SECRET
+payload = {
+    "event": "payment.captured",
+    "payload": {
+        "payment": {
+            "entity": {
+                "id": "pay_test_999",
+                "order_id": "order_test_123",
+                "amount": 5000,
+                "currency": "INR",
+                "status": "captured"
+            }
+        }
+    }
+}
+
+body_bytes = json.dumps(payload).encode('utf-8')
+signature = hmac.new(webhook_secret.encode('utf-8'), body_bytes, hashlib.sha256).hexdigest()
+
+headers = {
+    'Content-Type': 'application/json',
+    'X-Razorpay-Signature': signature
+}
+
+res = requests.post("http://localhost:5000/api/v1/payments/webhook", data=body_bytes, headers=headers)
+print("Webhook status code:", res.status_code)
+print("Response:", res.json())
+```
+
+---
+
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
+
 

@@ -45,23 +45,55 @@ class User(db.Model):
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable= False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable= False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    mpesa_receipt_number = db.Column(db.String(255), nullable=False)
-    merchant_request_id = db.Column(db.String(255), nullable=False)
-    checkout_request_id = db.Column(db.String(255), nullable=False)
-    result_code = db.Column(db.Integer, nullable=False)
-    result_desc = db.Column(db.String(255), nullable=False)
-    order_status = db.Column(db.String(50), nullable=False)
-    phone_number = db.Column(db.String(20), nullable=False)
-    transaction_date=db.Column(db.DateTime)
+    mpesa_receipt_number = db.Column(db.String(255), nullable=True, default='N/A')
+    merchant_request_id = db.Column(db.String(255), nullable=True, default='N/A')
+    checkout_request_id = db.Column(db.String(255), nullable=True, default='N/A')
+    result_code = db.Column(db.Integer, nullable=True, default=0)
+    result_desc = db.Column(db.String(255), nullable=True, default='Pending')
+    order_status = db.Column(db.String(50), nullable=False, default='Pending')
+    payment_status = db.Column(db.String(50), nullable=False, default='Unpaid')
+    phone_number = db.Column(db.String(50), nullable=False)
+    transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
 
-    product=db.relationship('Product', backref= db.backref('orders', lazy=True))
-    user=db.relationship('User', backref= db.backref('orders', lazy=True))
+    product = db.relationship('Product', backref=db.backref('orders', lazy=True))
+    user = db.relationship('User', backref=db.backref('orders', lazy=True))
     
     def repr(self):
         return f'<Order {self.id}>'
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    razorpay_order_id = db.Column(db.String(255), nullable=True)
+    razorpay_payment_id = db.Column(db.String(255), nullable=True)
+    razorpay_signature = db.Column(db.String(255), nullable=True)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False, default='INR')
+    status = db.Column(db.String(50), nullable=False, default='Created')  # Created, Success, Failed
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    order = db.relationship('Order', backref=db.backref('transactions', lazy=True))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'razorpay_order_id': self.razorpay_order_id,
+            'razorpay_payment_id': self.razorpay_payment_id,
+            'razorpay_signature': self.razorpay_signature,
+            'amount': self.amount,
+            'currency': self.currency,
+            'status': self.status,
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S") if self.created_at else None,
+            'updated_at': self.updated_at.strftime("%Y-%m-%d %H:%M:%S") if self.updated_at else None
+        }
+
+    def repr(self):
+        return f'<Transaction {self.id} Order {self.order_id} - {self.status}>'
 
 class Reviews(db.Model):
     id = db.Column(db.Integer, primary_key=True)

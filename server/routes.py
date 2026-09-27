@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify, make_response, current_app, render_template
-from server.models import db, Product, Order, User, Reviews, Search
+from server.models import db, Product, Order, User, Reviews, Search, Transaction
 import cloudinary
 import cloudinary.uploader
 import jwt
+import hmac
+import hashlib
 from sqlalchemy import func
 from datetime import datetime, timedelta
 from flask_jwt_extended import jwt_required, get_jwt_identity, JWTManager, create_access_token
@@ -10,6 +12,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import base64
 from requests.auth import HTTPBasicAuth
+from server.razorpay_service import (
+    create_razorpay_order,
+    verify_payment_signature,
+    verify_webhook_signature
+)
 
 product_routes = Blueprint('product_routes', __name__)
 consumer_key = '0gc0uEwGcFcoxtHXIySEPF5ek4k8uvhf'
@@ -35,99 +42,6 @@ def access_token():
         print("Access token error:", e)
         return ''
 
-@product_routes.route('/pay', methods=['POST']) 
-def MpesaExpress():
-    data = request.json or {}
-    amount = data.get('amount', 1)
-    phone = data.get('phone', '254700000000')
-    endpoint = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
-    try:
-        access_token_value = access_token()
-        if access_token_value:
-            headers = { "Authorization": "Bearer %s" % access_token_value}
-            TimeStamp = datetime.now()
-            times = TimeStamp.strftime("%Y%m%d%H%M%S")
-            password = "174379" + "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919" + times
-            datapass = base64.b64encode(password.encode('utf-8')).decode('utf-8') 
-            req_data = {
-                "BusinessShortCode": "174379",
-                "Password": datapass,
-                "Timestamp": times,
-                "TransactionType": "CustomerPayBillOnline",
-                "PartyA": str(phone),
-                "PartyB": "174379",
-                "PhoneNumber": str(phone),
-                "CallBackURL": my_endpoint + "/lmno-callback",
-                "AccountReference": "ECO-GREEN FARMERS",
-                "TransactionDesc": "Farm Produce Order",
-                "Amount": int(amount)
-            }
-            res = requests.post(endpoint, json=req_data, headers=headers, timeout=5)
-            try:
-                return jsonify(res.json()), res.status_code
-            except Exception:
-                pass
-        
-        return jsonify({
-            "ResponseCode": "0",
-            "ResponseDescription": f"STK Push prompt sent to {phone}",
-            "CustomerMessage": f"Payment prompt sent to {phone}. Please enter your Mpesa PIN to confirm."
-        }), 200
-    except Exception as e:
-        print("MpesaExpress error:", e)
-        return jsonify({
-            "ResponseCode": "0",
-            "ResponseDescription": f"STK Push prompt sent to {phone}",
-            "CustomerMessage": f"Payment prompt sent to {phone}. Please enter your Mpesa PIN to confirm."
-        }), 200
-@product_routes.route('/lmno-callback', methods=['POST'])
-def incoming():
-    data = request.get_json()
-    print("Incoming Callback Request:")
-    print(request.data.decode('utf-8'))
-    callback_data = data.get('Body', {}).get('stkCallback', {})
-    print(callback_data)
-    return "ok"
-    # Extract relevant information from the callback data
-    # merchant_request_id = callback_data.get('MerchantRequestID')
-    # checkout_request_id = callback_data.get('CheckoutRequestID')
-    # result_code = callback_data.get('ResultCode')
-    # result_desc = callback_data.get('ResultDesc')
-    # mpesa_receipt_number = callback_data.get('CallbackMetadata', {}).get('Item', [])[1].get('Value')
-    # transaction_date_str = datetime.now()
-    # phone_number = callback_data.get('CallbackMetadata', {}).get('Item', [])[4].get('Value')
-    # print(merchant_request_id)
-    # try:
-    #     # Find the user_id based on phone_number
-    #     user = User.query.filter_by(phone_number=phone_number).first()
-
-    #     if user:
-    #         # Create an Order and save it to the database
-            
-    #         order = Order(
-    #             user_id=user.id,
-    #             mpesa_receipt_number=mpesa_receipt_number,
-    #             merchant_request_id=merchant_request_id,
-    #             checkout_request_id=checkout_request_id,
-    #             result_code=result_code,
-    #             result_desc=result_desc,
-    #             order_status='Pending',  # You can set the initial status here
-    #             phone_number=phone_number,
-    #             amount=1.0,  # Adjust this according to your data
-    #             transaction_date=transaction_date_str
-    #         )
-    #         db.session.add(order)
-    #         db.session.commit()
-
-    #         return jsonify({'message': 'Order created successfully'})
-    #     else:
-    #         return jsonify({'error': 'User not found'}), 404
-
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify({'error': str(e)}), 500
-@product_routes.route('/register_urls')
-
 def serialize_order(order):
     product = Product.query.get(order.product_id)
     user = User.query.get(order.user_id)
@@ -142,8 +56,186 @@ def serialize_order(order):
         'amount': order.amount,
         'phone_number': order.phone_number,
         'status': order.order_status or 'Pending',
+        'payment_status': getattr(order, 'payment_status', 'Unpaid') or 'Unpaid',
         'orderDate': order.transaction_date.strftime("%Y-%m-%d %H:%M") if order.transaction_date else datetime.utcnow().strftime("%Y-%m-%d %H:%M")
     }
+
+@product_routes.route('/pay', methods=['POST'])
+@jwt_required(optional=True)
+def pay_order():
+    try:
+        data = request.json or {}
+        current_user_id = get_jwt_identity()
+
+        order_id = data.get('order_id')
+        if order_id:
+            order = Order.query.get(order_id)
+        else:
+            product_id = int(data.get('product_id', 1))
+            user_id = int(data.get('user_id', current_user_id or 1))
+            amount = float(data.get('amount', 10.0))
+            phone_number = str(data.get('phone_number', '254700000000'))
+            
+            order = Order(
+                product_id=product_id,
+                user_id=user_id,
+                amount=amount,
+                phone_number=phone_number,
+                order_status='Pending',
+                payment_status='Unpaid',
+                transaction_date=datetime.utcnow()
+            )
+            db.session.add(order)
+            db.session.commit()
+
+        if not order:
+            return jsonify({'error': 'Order not found', 'status': 'error'}), 404
+
+        simulate = current_app.config.get('RAZORPAY_SIMULATE', True)
+        key_id = current_app.config.get('RAZORPAY_KEY_ID', 'rzp_test_sample')
+        key_secret = current_app.config.get('RAZORPAY_KEY_SECRET', 'sample_secret')
+
+        if simulate or key_id == 'rzp_test_sample' or not key_id or not key_secret:
+            simulated_payment_id = f"pay_sim_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{order.id}"
+            simulated_order_id = f"order_sim_{order.id}"
+
+            txn = Transaction(
+                order_id=order.id,
+                razorpay_order_id=simulated_order_id,
+                razorpay_payment_id=simulated_payment_id,
+                razorpay_signature='simulated_signature',
+                amount=order.amount,
+                currency='INR',
+                status='Success'
+            )
+            order.payment_status = 'Paid'
+            db.session.add(txn)
+            db.session.commit()
+
+            return jsonify({
+                'simulate': True,
+                'status': 'success',
+                'message': 'Simulated payment successful. Order marked as Paid.',
+                'order_id': order.id,
+                'order': serialize_order(order),
+                'transaction': txn.to_dict()
+            }), 200
+
+        rzp_order = create_razorpay_order(order.amount, order.id)
+        razorpay_order_id = rzp_order.get('id')
+
+        txn = Transaction(
+            order_id=order.id,
+            razorpay_order_id=razorpay_order_id,
+            amount=order.amount,
+            currency=rzp_order.get('currency', 'INR'),
+            status='Created'
+        )
+        db.session.add(txn)
+        db.session.commit()
+
+        return jsonify({
+            'simulate': False,
+            'status': 'success',
+            'order_id': order.id,
+            'razorpay_order_id': razorpay_order_id,
+            'amount': rzp_order.get('amount'),
+            'amount_inr': order.amount,
+            'currency': rzp_order.get('currency', 'INR'),
+            'key_id': key_id
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("Payment error:", e)
+        return jsonify({'error': str(e), 'status': 'error'}), 500
+
+
+@product_routes.route('/api/v1/payments/verify', methods=['POST'])
+@jwt_required(optional=True)
+def verify_payment():
+    try:
+        data = request.json or {}
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+
+        if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
+            return jsonify({'error': 'Missing payment verification parameters', 'status': 'error'}), 400
+
+        txn = Transaction.query.filter_by(razorpay_order_id=razorpay_order_id).first()
+        if not txn:
+            return jsonify({'error': 'Transaction record not found', 'status': 'error'}), 404
+
+        is_valid = verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature)
+
+        if is_valid:
+            txn.status = 'Success'
+            txn.razorpay_payment_id = razorpay_payment_id
+            txn.razorpay_signature = razorpay_signature
+
+            order = Order.query.get(txn.order_id)
+            if order:
+                order.payment_status = 'Paid'
+
+            db.session.commit()
+            return jsonify({
+                'message': 'Payment verified and order marked as Paid',
+                'status': 'success',
+                'order_id': txn.order_id,
+                'order': serialize_order(order) if order else None
+            }), 200
+        else:
+            txn.status = 'Failed'
+            db.session.commit()
+            return jsonify({'error': 'Invalid payment signature. Verification failed.', 'status': 'error'}), 400
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e), 'status': 'error'}), 500
+
+
+@product_routes.route('/api/v1/payments/webhook', methods=['POST'])
+def razorpay_webhook():
+    try:
+        raw_body = request.get_data()
+        signature_header = request.headers.get('X-Razorpay-Signature', '')
+        webhook_secret = current_app.config.get('RAZORPAY_WEBHOOK_SECRET', '')
+
+        if webhook_secret and webhook_secret != 'sample_webhook_secret':
+            expected_sig = hmac.new(
+                webhook_secret.encode('utf-8'),
+                raw_body,
+                hashlib.sha256
+            ).hexdigest()
+
+            if not hmac.compare_digest(expected_sig, signature_header):
+                print("Razorpay webhook signature mismatch")
+                return jsonify({'status': 'error', 'message': 'Invalid signature'}), 400
+
+        payload = request.json or {}
+        event = payload.get('event')
+
+        if event in ['payment.captured', 'order.paid']:
+            payment_entity = payload.get('payload', {}).get('payment', {}).get('entity', {})
+            razorpay_order_id = payment_entity.get('order_id')
+            razorpay_payment_id = payment_entity.get('id')
+
+            if razorpay_order_id:
+                txn = Transaction.query.filter_by(razorpay_order_id=razorpay_order_id).first()
+                if txn:
+                    txn.status = 'Success'
+                    txn.razorpay_payment_id = razorpay_payment_id
+                    order = Order.query.get(txn.order_id)
+                    if order:
+                        order.payment_status = 'Paid'
+                    db.session.commit()
+
+        return jsonify({'status': 'ok'}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Webhook processing error:", e)
+        return jsonify({'status': 'error', 'message': str(e)}), 200
 
 @product_routes.route('/api/v1/products/create', methods=['POST'])
 @jwt_required(optional=True)

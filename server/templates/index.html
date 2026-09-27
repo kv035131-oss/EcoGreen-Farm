@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Razorpay Checkout SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <style>
         :root {
@@ -878,7 +880,7 @@
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal('orderModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 2;">
-                        <i class="fa-solid fa-credit-card"></i> Pay via Mpesa & Confirm
+                        <i class="fa-solid fa-credit-card"></i> Pay via Razorpay & Confirm
                     </button>
                 </div>
             </form>
@@ -1307,7 +1309,7 @@
             document.getElementById('orderTotalDisplay').textContent = '$' + total;
         }
 
-        // Submit Order & Trigger Payment Prompt
+        // Submit Order & Trigger Razorpay Payment
         async function submitOrder(e) {
             e.preventDefault();
             const productId = parseInt(document.getElementById('orderProductId').value);
@@ -1345,28 +1347,82 @@
                     throw new Error(orderData.error || 'Failed to place order');
                 }
 
-                // 2. Trigger Mpesa Express STK Push payment prompt (best-effort)
-                let msg = `Order #${orderData.order_id || ''} placed successfully!`;
-                try {
-                    const payRes = await fetch('/pay', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            phone: phone,
-                            amount: Math.round(totalAmount) || 1
-                        })
-                    });
-                    const payText = await payRes.text();
-                    const payJson = JSON.parse(payText);
-                    if (payJson && (payJson.CustomerMessage || payJson.ResponseDescription)) {
-                        msg = `Order #${orderData.order_id || ''} Placed! ${payJson.CustomerMessage || payJson.ResponseDescription}`;
-                    }
-                } catch (payErr) {
-                    console.warn('Mpesa STK push notification warning:', payErr);
+                closeModal('orderModal');
+                const orderId = orderData.order_id;
+                showToast(`Order #${orderId} created! Initiating payment...`);
+
+                // 2. Call /pay endpoint to create Razorpay Order or trigger simulation
+                const payRes = await fetch('/pay', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ order_id: orderId })
+                });
+
+                const payJson = await payRes.json();
+                if (!payRes.ok || payJson.status === 'error') {
+                    throw new Error(payJson.error || 'Failed to initialize payment');
                 }
 
-                closeModal('orderModal');
-                showToast(msg);
+                if (payJson.simulate) {
+                    showToast(`Order #${orderId} placed & Paid successfully! (Simulated Payment)`);
+                    return;
+                }
+
+                // 3. Open Razorpay Checkout modal
+                if (typeof Razorpay === 'undefined') {
+                    showToast('Razorpay SDK failed to load. Please check your internet connection.', true);
+                    return;
+                }
+
+                const options = {
+                    key: payJson.key_id,
+                    amount: payJson.amount,
+                    currency: payJson.currency || 'INR',
+                    name: 'EcoGreen Farm Produce',
+                    description: `Payment for Order #${orderId}`,
+                    order_id: payJson.razorpay_order_id,
+                    handler: async function (response) {
+                        try {
+                            const verifyRes = await fetch('/api/v1/payments/verify', {
+                                method: 'POST',
+                                headers: headers,
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
+                            });
+                            const verifyJson = await verifyRes.json();
+                            if (verifyRes.ok && verifyJson.status === 'success') {
+                                showToast(`Payment successful for Order #${orderId}!`);
+                                if (document.getElementById('ordersModal').classList.contains('active')) {
+                                    loadOrders();
+                                }
+                            } else {
+                                showToast(verifyJson.error || 'Payment signature verification failed', true);
+                            }
+                        } catch (vErr) {
+                            showToast('Verification request failed', true);
+                        }
+                    },
+                    prefill: {
+                        name: currentUser ? currentUser.username : '',
+                        email: currentUser ? currentUser.email : '',
+                        contact: phone || ''
+                    },
+                    theme: {
+                        color: '#10b981'
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            showToast('Payment window closed. You can pay later from your Orders menu.', true);
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+
             } catch (err) {
                 console.error('Order error:', err);
                 showToast(err.message || 'Failed to submit order', true);
@@ -1480,6 +1536,10 @@
                             `<span class="badge-status badge-active"><i class="fa-solid fa-check"></i> Confirmed</span>` :
                             `<span class="badge-status badge-pending"><i class="fa-solid fa-hourglass-half"></i> Pending</span>`;
 
+                        let payBadgeHtml = o.payment_status === 'Paid' ?
+                            `<span class="badge-status badge-active" style="background:#dcfce7; color:#15803d; font-size:0.75rem;"><i class="fa-solid fa-credit-card"></i> Paid</span>` :
+                            `<span class="badge-status badge-pending" style="background:#fee2e2; color:#b91c1c; font-size:0.75rem;"><i class="fa-solid fa-circle-exclamation"></i> Unpaid</span>`;
+
                         return `
                             <tr>
                                 <td style="font-weight:700;">#${o.id}</td>
@@ -1494,8 +1554,10 @@
                                     <div style="font-size:0.75rem; color: var(--text-muted);">${escapeHtml(o.phone_number || '')}</div>
                                 </td>
                                 <td style="font-weight:700; color: var(--primary);">$${parseFloat(o.amount || 0).toFixed(2)}</td>
-                                <td style="font-size:0.85rem; color: var(--text-muted);">${o.orderDate}</td>
-                                <td>${statusBadgeHtml}</td>
+                                <td>
+                                    <div>${statusBadgeHtml}</div>
+                                    <div style="margin-top:0.25rem;">${payBadgeHtml}</div>
+                                </td>
                                 <td>${actionHtml}</td>
                             </tr>
                         `;
