@@ -1,8 +1,8 @@
 """
 EcoGreen Power BI Data Importer & Exporter Script
 ------------------------------------------------
-This script fetches all 6 Admin Analytics REST endpoints from your local EcoGreen app
-and saves them into CSV files ('powerbi_summary.csv', 'powerbi_orders.csv', etc.)
+This script fetches all Admin Analytics REST endpoints from your local EcoGreen app
+and saves them into CSV files inside 'powerbi/datasets/'
 or loads them directly into Power BI Desktop using Python Script Data Source.
 
 Usage in Power BI Desktop:
@@ -10,12 +10,16 @@ Usage in Power BI Desktop:
 2. Paste this entire script and click OK.
 """
 
+import os
 import requests
 import json
 import pandas as pd
 
 BASE_URL = "http://localhost:5000/api/v1/admin/analytics"
 AUTH = ("admin", "admin123")
+
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "datasets")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def fetch_endpoint(endpoint_path, params=None):
     url = f"{BASE_URL}/{endpoint_path}"
@@ -54,10 +58,10 @@ df_user_growth = fetch_endpoint("user-growth", params={"interval": "day"})
 
 if __name__ == "__main__":
     print("--- Exporting EcoGreen Power BI Analytics Datasets ---")
-    df_summary.to_csv("powerbi_summary.csv", index=False)
-    df_orders_over_time.to_csv("powerbi_orders_over_time.csv", index=False)
-    df_top_farmers.to_csv("powerbi_top_farmers.csv", index=False)
-    df_top_products.to_csv("powerbi_top_products.csv", index=False)
-    df_category_breakdown.to_csv("powerbi_category_breakdown.csv", index=False)
-    df_user_growth.to_csv("powerbi_user_growth.csv", index=False)
-    print("Export complete! CSV files created in project root for Power BI import.")
+    df_summary.to_csv(os.path.join(OUTPUT_DIR, "powerbi_summary.csv"), index=False)
+    df_orders_over_time.to_csv(os.path.join(OUTPUT_DIR, "powerbi_orders_over_time.csv"), index=False)
+    df_top_farmers.to_csv(os.path.join(OUTPUT_DIR, "powerbi_top_farmers.csv"), index=False)
+    df_top_products.to_csv(os.path.join(OUTPUT_DIR, "powerbi_top_products.csv"), index=False)
+    df_category_breakdown.to_csv(os.path.join(OUTPUT_DIR, "powerbi_category_breakdown.csv"), index=False)
+    df_user_growth.to_csv(os.path.join(OUTPUT_DIR, "powerbi_user_growth.csv"), index=False)
+    print(f"Export complete! CSV files created in '{OUTPUT_DIR}' for Power BI import.")

@@ -81,23 +81,82 @@
 
 ---
 
-## 💳 Razorpay Payment Integration
+## 📊 Dedicated Admin Analytics Dashboard & Connecting Power BI
 
-EcoGreen integrates **Razorpay** for payment processing. Payment state (`Unpaid` → `Paid`) is tracked independently from order status (`Pending` → `Confirmed`). An order is marked `Paid` only after a verified server-side Razorpay signature check or webhook event.
+EcoGreen features a dedicated, analytics-only business intelligence dashboard for platform owners accessible at `/admin/dashboard`. When an `admin` user logs in, they are automatically routed to the executive dashboard, hiding consumer/farmer marketplace controls.
 
-### 1. Environment & Configuration
-Create a `.env` file in the project root:
-```env
-RAZORPAY_KEY_ID=rzp_test_your_key_id
-RAZORPAY_KEY_SECRET=your_razorpay_secret_key
-RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_key
-RAZORPAY_SIMULATE=true
-```
+### 🛡️ Admin Security & Authentication
+- **Web App:** Protected via JWT Bearer Token stored in session and checked by `@admin_required`.
+- **Power BI Web Connector:** Supports HTTP Basic Authentication using credentials configured in `.env`:
+  ```env
+  POWERBI_USER=admin
+  POWERBI_PASSWORD=admin123
+  ```
+- **Data Privacy:** Personal data like phone numbers are masked (`98****1234`) in analytics outputs.
 
-* **`RAZORPAY_SIMULATE=true`**: Enables simulated instant payments for local testing without active Razorpay API keys.
-* Set `RAZORPAY_SIMULATE=false` when using live or test sandbox credentials from Razorpay.
+---
 
-### 2. Getting Test API Keys from Razorpay Dashboard
+### 🔌 Analytics REST API Endpoints (`/api/v1/admin/analytics`)
+All endpoints accept optional date filters (`?from=YYYY-MM-DD&to=YYYY-MM-DD` or `?range=7d|30d|90d|all`) and return Power BI-friendly flat JSON:
+
+| Category | Endpoint | Description |
+| :--- | :--- | :--- |
+| **Overview** | `GET /summary` | Top-level KPIs, revenue, order counts, growth percentages vs prior period. |
+| **Orders & Revenue** | `GET /orders-over-time?interval=day\|week\|month` | Time series order volume, revenue, and average order value. |
+| | `GET /order-status-breakdown` | Counts by status (Pending, Confirmed, Delivered, Cancelled, Rejected). |
+| | `GET /fulfillment-funnel` | Drop-off metrics across Placed → Paid → Confirmed → Delivered. |
+| | `GET /abandoned-orders` | Unpaid abandoned order count, revenue lost, and top 20 list. |
+| **Farmer Analytics** | `GET /farmer-performance?limit=10` | Orders received, accepted, rejected, response time, and revenue per farmer. |
+| | `GET /farmer-response-time` | Average, median, and bucketed farmer confirmation response times. |
+| | `GET /inactive-farmers?days=30` | List of farmers with no listings or confirmations in the past X days. |
+| | `GET /top-farmers-by-revenue?limit=10` | Top revenue-generating farmers leaderboard. |
+| **Consumer Analytics**| `GET /top-consumers?limit=10` | Top buyers by order count and total spend in INR (₹). |
+| | `GET /new-vs-returning?interval=month` | Cohort breakdown of new vs returning customers over time. |
+| | `GET /repeat-purchase` | Repeat purchase rate %, total ordering buyers, avg orders per buyer. |
+| **Products & Stock** | `GET /category-breakdown` | Sales, revenue, and average price split by produce category. |
+| | `GET /top-products?limit=10` | Best-selling farm produce items ranked by revenue. |
+| | `GET /supply-vs-demand` | Stock listed vs units sold and sell-through percentage per category. |
+| | `GET /low-stock?threshold=10` | Low-stock and out-of-stock inventory alerts. |
+| | `GET /dead-stock?days=30` | Products listed with zero sales in the specified window. |
+| **Geography & Time** | `GET /sales-by-location` | Revenue, orders, and farmer density grouped by region/district. |
+| | `GET /orders-by-weekday` | Order distribution across days of the week (Mon–Sun). |
+| | `GET /orders-by-hour` | Order volume by hour of the day (00:00–23:00). |
+| | `GET /orders-heatmap` | 7x24 weekday × hour matrix for demand intensity heatmaps. |
+| **Growth & Payments**| `GET /user-growth?interval=month` | New and cumulative farmers and consumers over time. |
+| | `GET /payments-breakdown` | Transaction counts and amounts by status (Success, Failed, Created). |
+| | `GET /payment-methods` | Revenue split by payment method (UPI, Card, Netbanking, Wallet). |
+
+---
+
+### 📈 Step-by-Step Guide: Connecting Power BI Desktop
+
+To build interactive reports in **Power BI Desktop**:
+
+1. **Open Power BI Desktop** and click **Get Data > Web**.
+2. **Select Basic Authentication** in the connection dialog:
+   - **User name:** `admin`
+   - **Password:** `admin123`
+3. **Add Queries for Each Table:**
+   Enter the desired endpoint URL (e.g., `http://127.0.0.1:5000/api/v1/admin/analytics/summary` or `http://127.0.0.1:5000/api/v1/admin/analytics/orders-over-time`).
+4. **Transform & Convert to Table:**
+   In Power Query Editor, click **To Table**, expand the JSON record columns, and set appropriate data types (Currency, Whole Number, DateTime).
+5. **Schedule Refresh:** Set up scheduled refresh in Power BI Service using Web Connection credentials.
+
+---
+
+### 🛠️ CLI Commands
+
+- **Create Admin User:**
+  ```bash
+  flask create-admin --username admin --email admin@ecogreen.com --password admin123
+  ```
+
+- **Seed Realistic Indian Demo Data:**
+  ```bash
+  flask seed-demo-data
+  ```
+  Generates 12 Indian farmers, 30 consumers, 50 produce items, and ~250 orders over the past 90 days with realistic status variations, response times, payment methods, and inventory alerts.
+
 1. Sign up / Log in to [Razorpay Dashboard](https://dashboard.razorpay.com/).
 2. Switch to **Test Mode** using the toggle in the top navbar.
 3. Go to **Account & Settings** → **API Keys** under Website and App settings.

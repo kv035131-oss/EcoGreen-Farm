@@ -27,6 +27,11 @@ my_endpoint = 'https://c001-41-80-116-223.ngrok-free.app' #callback url
 def home():
     return render_template('index.html')
 
+@product_routes.route('/admin/dashboard')
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
+
+
 @product_routes.route('/access_token')
 def token():
     data = access_token()
@@ -248,6 +253,11 @@ def create_product():
         if not user_id and current_user_id:
             user_id = int(current_user_id)
 
+        if user_id:
+            user = User.query.get(int(user_id))
+            if user and user.user_type == 'admin':
+                return jsonify({'error': 'Admins are not allowed to create products.', 'status': 'error'}), 403
+
         image = request.files.get('image') if request.files else None
         if image:
             try:
@@ -410,6 +420,16 @@ def update_order_status(order_id):
         new_status = data.get('status', 'Confirmed')
 
         order.order_status = new_status
+        now = datetime.utcnow()
+        if new_status == 'Confirmed' and not order.confirmed_at:
+            order.confirmed_at = now
+        elif new_status in ['Rejected', 'Cancelled'] and not order.cancelled_at:
+            order.cancelled_at = now
+        elif new_status == 'Delivered' and not order.delivered_at:
+            order.delivered_at = now
+            if not order.confirmed_at:
+                order.confirmed_at = now
+
         db.session.commit()
 
         return jsonify({
@@ -420,6 +440,32 @@ def update_order_status(order_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e), 'status': 'error'}), 400
+
+
+@product_routes.route('/api/v1/Orders/<int:order_id>/deliver', methods=['PUT', 'POST'])
+@jwt_required(optional=True)
+def mark_order_delivered(order_id):
+    try:
+        order = Order.query.get(order_id)
+        if not order:
+            return jsonify({'error': 'Order not found', 'status': 'error'}), 404
+
+        order.order_status = 'Delivered'
+        now = datetime.utcnow()
+        order.delivered_at = now
+        if not order.confirmed_at:
+            order.confirmed_at = now
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Order marked as Delivered',
+            'status': 'success',
+            'order': serialize_order(order)
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e), 'status': 'error'}), 400
+
 
 
 @product_routes.route('/api/v1/Reviews', methods=['GET'])
@@ -518,6 +564,14 @@ def create_order():
         data = request.json or {}
 
         user_id = int(data.get('user_id', 1))
+        current_user_id = get_jwt_identity()
+        if current_user_id:
+            user_id = int(current_user_id)
+
+        user = User.query.get(user_id)
+        if user and user.user_type == 'admin':
+            return jsonify({'error': 'Admins are not allowed to place orders.', 'status': 'error'}), 403
+
         product_id = int(data.get('product_id', 1))
         amount = float(data.get('amount', 10.0))
         phone_number = str(data.get('phone_number', '254700000000'))
@@ -610,6 +664,8 @@ def login():
     password = data.get("password")
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
+        user.last_active_at = datetime.utcnow()
+        db.session.commit()
         access_token = generate_token(user)
         return jsonify({
             "access-token": access_token,
@@ -626,6 +682,7 @@ def login():
         return jsonify({
             'error': "Invalid credentials",
         }), 401
+
 
 @product_routes.route('/api/v1/user/profile', methods=['GET'])
 @jwt_required(optional=True)

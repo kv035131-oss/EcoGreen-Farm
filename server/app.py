@@ -50,6 +50,28 @@ def seed_data():
         db.session.rollback()
         print('Seed error:', e)
 
+def patch_db_schema():
+    try:
+        from sqlalchemy import text
+        with db.engine.connect() as conn:
+            statements = [
+                "ALTER TABLE user ADD COLUMN last_active_at DATETIME",
+                "ALTER TABLE product ADD COLUMN created_at DATETIME",
+                "ALTER TABLE \"order\" ADD COLUMN confirmed_at DATETIME",
+                "ALTER TABLE \"order\" ADD COLUMN cancelled_at DATETIME",
+                "ALTER TABLE \"order\" ADD COLUMN delivered_at DATETIME",
+                "ALTER TABLE \"transaction\" ADD COLUMN payment_method VARCHAR(50)"
+            ]
+            for stmt in statements:
+                try:
+                    conn.execute(text(stmt))
+                    conn.commit()
+                except Exception as ex:
+                    print("Patch stmt note:", stmt, ex)
+    except Exception as e:
+        print("Schema patch note:", e)
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -60,8 +82,12 @@ def create_app():
     jwt = JWTManager(app)
 
     with app.app_context():
+        patch_db_schema()
         db.create_all()
         seed_data()
+        from server.seed_demo import seed_demo_data
+        seed_demo_data()
+
 
     app.register_blueprint(product_routes)
     app.register_blueprint(analytics_bp)
@@ -91,5 +117,13 @@ def create_app():
             db.session.commit()
             click.echo(f"Created new Admin user '{username}' ({email}).")
 
+    @app.cli.command('seed-demo-data')
+    def seed_demo_data_cmd():
+        """CLI command to seed realistic Indian demo data for analytics & Power BI."""
+        from server.seed_demo import seed_demo_data
+        seed_demo_data()
+        click.echo("Seeded realistic Indian demo data for EcoGreen Analytics.")
+
     return app
+
 

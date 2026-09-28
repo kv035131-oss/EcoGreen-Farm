@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float,ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from flask_migrate import Migrate
 
 db = SQLAlchemy()
@@ -47,8 +47,6 @@ class User(db.Model):
 
     def repr(self):
         return f'<User {self.id}>'
-    
-
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -115,10 +113,8 @@ class Reviews(db.Model):
     product=db.relationship('Product', backref= db.backref('reviews', lazy=True))
     user=db.relationship('User', backref= db.backref('reviews', lazy=True))
 
-
     def repr(self):
         return f'<Review {self.id}>'
-
 
 class Search(db.Model):
     id = db.Column(db.Integer, primary_key=True)

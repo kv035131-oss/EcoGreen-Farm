@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoGreen Admin - Business Intelligence & Analytics</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-light: #d1fae5;
+            --secondary: #10b981;
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-light: #f8fafc;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4, .brand-text {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Header Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+        }
+
+        .nav-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #065f46;
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .logo i {
+            background: #d1fae5;
+            color: #059669;
+            padding: 0.5rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+        }
+
+        .admin-badge-header {
+            background: #059669;
+            color: white;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            list-style: none;
+        }
+
+        .btn-pbi {
+            background: linear-gradient(135deg, #f2c811 0%, #e6a100 100%);
+            color: #1a1a1a;
+            font-weight: 700;
+            padding: 0.55rem 1.1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(242, 200, 17, 0.3);
+        }
+
+        .btn-pbi:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(242, 200, 17, 0.4);
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary-light);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            color: #065f46;
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #fca5a5;
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #fee2e2;
+        }
+
+        /* Sticky Control Bar */
+        .controls-bar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            position: sticky;
+            top: 61px;
+            z-index: 90;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .controls-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .pill-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 0.4rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill-btn.active, .pill-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .date-input {
+            padding: 0.35rem 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.82rem;
+        }
+
+        .btn-action {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-export {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-export:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Navigation Tabs */
+        .tabs-nav {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1.5rem;
+            overflow-x: auto;
+        }
+
+        .tabs-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            padding: 0.85rem 1.1rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+        }
+
+        /* Main Dashboard Content */
+        main {
+            max-width: 1440px;
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .section-pane {
+            display: none;
+        }
+
+        .section-pane.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Grid Layouts */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .kpi-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .kpi-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 0.3rem;
+        }
+
+        .kpi-badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            width: fit-content;
+        }
+
+        .badge-up { background: #dcfce7; color: #166534; }
+        .badge-down { background: #fee2e2; color: #991b1b; }
+        .badge-neutral { background: #f1f5f9; color: #475569; }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .btn-icon {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .chart-container {
+            position: relative;
+            flex: 1;
+            min-height: 280px;
+            width: 100%;
+        }
+
+        /* Table Styling */
+        .table-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .status-tag {
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .tag-paid { background: #dcfce7; color: #15803d; }
+        .tag-unpaid { background: #fee2e2; color: #b91c1c; }
+        .tag-confirmed { background: #dbeafe; color: #1d4ed8; }
+        .tag-pending { background: #fef3c7; color: #b45309; }
+
+        /* Heatmap Canvas / Grid */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(24, 1fr);
+            gap: 2px;
+            background: #e2e8f0;
+            padding: 2px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .hm-cell {
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+
+        .hm-header {
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+
+        /* Power BI Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            max-width: 650px;
+            width: 90%;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Admin Header -->
+    <header>
+        <div class="nav-container">
+            <a href="/admin/dashboard" class="logo">
+                <i class="fa-solid fa-leaf"></i>
+                <span class="brand-text">EcoGreen</span>
+                <span class="admin-badge-header">Analytics DB</span>
+            </a>
+            <ul class="nav-links">
+                <li>
+                    <div class="user-chip">
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span id="adminUsername">Admin</span>
+                    </div>
+                </li>
+                <li><button onclick="logoutAdmin()" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+        <div class="controls-container">
+            <div class="filter-group">
+                <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-right: 0.25rem;">RANGE:</span>
+                <button class="pill-btn" onclick="setRange('today', this)">Today</button>
+                <button class="pill-btn" onclick="setRange('7d', this)">7 Days</button>
+                <button class="pill-btn active" onclick="setRange('30d', this)">30 Days</button>
+                <button class="pill-btn" onclick="setRange('90d', this)">90 Days</button>
+                <button class="pill-btn" onclick="setRange('all', this)">All Time</button>
+                <button class="pill-btn" onclick="toggleCustomDates(this)">Custom</button>
+
+                <div id="customDateContainer" style="display: none; align-items: center; gap: 0.3rem;">
+                    <input type="date" id="fromDate" class="date-input">
+                    <span style="font-size: 0.8rem;">to</span>
+                    <input type="date" id="toDate" class="date-input">
+                    <button class="pill-btn active" onclick="applyCustomDates()">Apply</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <span id="lastUpdated" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Updated: Just now</span>
+                <button onclick="fetchDashboardData(true)" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; font-weight: 500; cursor: pointer;">
+                    <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh(this)"> Auto (60s)
+                </label>
+                <button onclick="exportAllCSV()" class="btn-action btn-export"><i class="fa-solid fa-file-csv"></i> Export All (CSV)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('overview', this)"><i class="fa-solid fa-gauge-high"></i> Overview</button>
+            <button class="tab-btn" onclick="switchTab('orders-rev', this)"><i class="fa-solid fa-chart-line"></i> Orders & Revenue</button>
+            <button class="tab-btn" onclick="switchTab('farmers', this)"><i class="fa-solid fa-wheat-awn"></i> Farmers</button>
+            <button class="tab-btn" onclick="switchTab('consumers', this)"><i class="fa-solid fa-users"></i> Consumers</button>
+            <button class="tab-btn" onclick="switchTab('products-inv', this)"><i class="fa-solid fa-boxes-stacked"></i> Products & Stock</button>
+            <button class="tab-btn" onclick="switchTab('geography', this)"><i class="fa-solid fa-map-location-dot"></i> Geography & Timing</button>
+            <button class="tab-btn" onclick="switchTab('growth-pay', this)"><i class="fa-solid fa-credit-card"></i> Growth & Payments</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+
+        <!-- SECTION 1: OVERVIEW -->
+        <section id="pane-overview" class="section-pane active">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Total Orders</span><div class="kpi-icon"><i class="fa-solid fa-shopping-basket"></i></div></div>
+                    <div class="kpi-value" id="kpi-total-orders">-</div>
+                    <div id="badge-orders" class="kpi-badge badge-neutral"><i class="fa-solid fa-minus"></i> 0% vs prev</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Total Revenue</span><div class="kpi-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+                    <div class="kpi-value" id="kpi-total-revenue">-</div>
+                    <div id="badge-revenue" class="kpi-badge badge-neutral"><i class="fa-solid fa-minus"></i> 0% vs prev</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Avg Order Value</span><div class="kpi-icon"><i class="fa-solid fa-calculator"></i></div></div>
+                    <div class="kpi-value" id="kpi-aov">-</div>
+                    <div class="kpi-badge badge-neutral">Per paid order</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Pending Orders</span><div class="kpi-icon"><i class="fa-solid fa-clock"></i></div></div>
+                    <div class="kpi-value" id="kpi-pending-orders">-</div>
+                    <div class="kpi-badge badge-neutral">Awaiting action</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Confirmed Orders</span><div class="kpi-icon"><i class="fa-solid fa-check-circle"></i></div></div>
+                    <div class="kpi-value" id="kpi-confirmed-orders">-</div>
+                    <div class="kpi-badge badge-up"><i class="fa-solid fa-check"></i> Processing</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Delivered Orders</span><div class="kpi-icon"><i class="fa-solid fa-truck"></i></div></div>
+                    <div class="kpi-value" id="kpi-delivered-orders">-</div>
+                    <div class="kpi-badge badge-up"><i class="fa-solid fa-circle-check"></i> Fulfilled</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Active Farmers</span><div class="kpi-icon"><i class="fa-solid fa-tractor"></i></div></div>
+                    <div class="kpi-value" id="kpi-farmers">-</div>
+                    <div class="kpi-badge badge-neutral">Registered producers</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Total Consumers</span><div class="kpi-icon"><i class="fa-solid fa-user-group"></i></div></div>
+                    <div class="kpi-value" id="kpi-consumers">-</div>
+                    <div class="kpi-badge badge-neutral">Registered buyers</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Confirmation Rate</span><div class="kpi-icon"><i class="fa-solid fa-thumbs-up"></i></div></div>
+                    <div class="kpi-value" id="kpi-conf-rate">-</div>
+                    <div class="kpi-badge badge-up">Farmer acceptance</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Cancellation Rate</span><div class="kpi-icon"><i class="fa-solid fa-ban"></i></div></div>
+                    <div class="kpi-value" id="kpi-canc-rate">-</div>
+                    <div class="kpi-badge badge-down">Rejected/Cancelled</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Repeat Customer %</span><div class="kpi-icon"><i class="fa-solid fa-rotate-left"></i></div></div>
+                    <div class="kpi-value" id="kpi-repeat-rate">-</div>
+                    <div class="kpi-badge badge-up">Retention metric</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Payment Success %</span><div class="kpi-icon"><i class="fa-solid fa-shield-check"></i></div></div>
+                    <div class="kpi-value" id="kpi-pay-rate">-</div>
+                    <div class="kpi-badge badge-up">Gateway metric</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: ORDERS & REVENUE -->
+        <section id="pane-orders-rev" class="section-pane">
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-chart-area"></i> Orders & Revenue Over Time</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('orders-over-time')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartOrdersOverTime')" class="btn-icon" title="Download PNG"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartOrdersOverTime"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-chart-pie"></i> Order Status Breakdown</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('order-status-breakdown')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartOrderStatus')" class="btn-icon" title="Download PNG"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartOrderStatus"></canvas></div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-filter"></i> Fulfillment Funnel Drop-off</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('fulfillment-funnel')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartFunnel"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-cart-arrow-down"></i> Abandoned Orders Summary</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('abandoned-orders')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
+                        </div>
+                    </div>
+                    <div style="padding: 0.5rem 0;">
+                        <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Unpaid Abandoned Orders:</strong> <span id="abandonedCount">0</span></p>
+                        <p style="font-size: 0.9rem; margin-bottom: 1rem;"><strong>Potential Revenue Lost:</strong> <span id="abandonedRevenue" style="color: var(--danger); font-weight: 700;">₹0</span></p>
+                    </div>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        <table>
+                            <thead><tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Amount</th><th>Date</th></tr></thead>
+                            <tbody id="tblAbandoned"><tr><td colspan="5" style="text-align: center;">Loading abandoned orders...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: FARMERS -->
+        <section id="pane-farmers" class="section-pane">
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-chart-column"></i> Orders Received vs Confirmed per Farmer</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('farmer-performance')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartFarmerPerf')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartFarmerPerf"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-clock"></i> Response Time Distribution</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('farmer-response-time')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartResponseTime')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartResponseTime"></canvas></div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-trophy"></i> Farmer Performance Leaderboard</h3>
+                <table>
+                    <thead>
+                        <tr><th>Farmer Name</th><th>Location</th><th>Products</th><th>Orders Received</th><th>Confirmed</th><th>Rejected</th><th>Confirmation %</th><th>Avg Response (hrs)</th><th>Total Revenue</th></tr>
+                    </thead>
+                    <tbody id="tblFarmerLeaderboard">
+                        <tr><td colspan="9" style="text-align: center;">Loading leaderboard...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-card">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-triangle-exclamation"></i> Inactive Farmers Alert (30+ Days)</h3>
+                <table>
+                    <thead>
+                        <tr><th>Farmer Name</th><th>Location</th><th>Last Listing Date</th><th>Last Confirmation Date</th></tr>
+                    </thead>
+                    <tbody id="tblInactiveFarmers">
+                        <tr><td colspan="4" style="text-align: center;">Loading inactive farmers...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: CONSUMERS -->
+        <section id="pane-consumers" class="section-pane">
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-user-check"></i> Top 10 Consumers by Spend</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('top-consumers')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartTopConsumers')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartTopConsumers"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-user-plus"></i> New vs Returning Customers</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('new-vs-returning')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartNewReturning')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartNewReturning"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: PRODUCTS & STOCK -->
+        <section id="pane-products-inv" class="section-pane">
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-boxes-packing"></i> Revenue by Category</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('category-breakdown')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartCategoryRev')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartCategoryRev"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-award"></i> Top 10 Best Selling Products</div>
+                        <div class="chart-actions">
+                            <button onclick="downloadCSV('top-products')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
+                            <button onclick="downloadPNG('chartTopProducts')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartTopProducts"></canvas></div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="table-card" style="flex: 1;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);"><i class="fa-solid fa-box-open"></i> Low-Stock & Out-of-Stock Alerts</h3>
+                    <table>
+                        <thead><tr><th>Product</th><th>Farmer</th><th>Category</th><th>Stock Left</th></tr></thead>
+                        <tbody id="tblLowStock"><tr><td colspan="4" style="text-align: center;">Loading stock alerts...</td></tr></tbody>
+                    </table>
+                </div>
+
+                <div class="table-card" style="flex: 1;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-skull"></i> Dead Stock (No orders in 30 days)</h3>
+                    <table>
+                        <thead><tr><th>Product</th><th>Farmer</th><th>Listed Date</th><th>Current Stock</th></tr></thead>
+                        <tbody id="tblDeadStock"><tr><td colspan="4" style="text-align: center;">Loading dead stock...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: GEOGRAPHY & TIMING -->
+        <section id="pane-geography" class="section-pane">
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-map-location-dot"></i> Sales & Orders by Location</div>
+                        <div class="chart-actions"><button onclick="downloadCSV('sales-by-location')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartLocationSales"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-calendar-day"></i> Orders by Weekday & Hour</div>
+                        <div class="chart-actions"><button onclick="downloadCSV('orders-by-weekday')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartWeekdayOrders"></canvas></div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-fire"></i> Order Heatmap (Weekday x Hour Intensity)</h3>
+                <div id="heatmapContainer" style="overflow-x: auto;"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 7: GROWTH & PAYMENTS -->
+        <section id="pane-growth-pay" class="section-pane">
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-user-gear"></i> Platform User Growth</div>
+                        <div class="chart-actions"><button onclick="downloadCSV('user-growth')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartUserGrowth"></canvas></div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-wallet"></i> Payment Methods Split</div>
+                        <div class="chart-actions"><button onclick="downloadCSV('payment-methods')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
+                    </div>
+                    <div class="chart-container"><canvas id="chartPaymentMethods"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+
+
+
+    <!-- Scripts -->
+    <script>
+        // ROUTE GUARD & TOKEN RETRIEVAL
+        let token = localStorage.getItem('farmer_app_jwt') || localStorage.getItem('access-token') || localStorage.getItem('token');
+        let user = JSON.parse(localStorage.getItem('farmer_app_user') || localStorage.getItem('user') || '{}');
+
+        // If user object is empty, set default admin persona
+        if (!user || !user.username) {
+            user = { username: 'admin', user_type: 'admin' };
+        }
+
+        document.getElementById('adminUsername').innerText = user.username || 'Admin';
+
+        function logoutAdmin() {
+            localStorage.removeItem('farmer_app_jwt');
+            localStorage.removeItem('farmer_app_user');
+            localStorage.removeItem('access-token');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        let currentRange = '30d';
+        let autoRefreshInterval = null;
+        const chartInstances = {};
+
+        // Helper: Indian Rupee formatting
+        function formatRupee(val) {
+            const num = parseFloat(val || 0);
+            return '₹' + num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+        }
+
+        function setRange(range, el) {
+            currentRange = range;
+            document.querySelectorAll('.controls-bar .pill-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('customDateContainer').style.display = 'none';
+            fetchDashboardData();
+        }
+
+        function toggleCustomDates(el) {
+            document.querySelectorAll('.controls-bar .pill-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('customDateContainer').style.display = 'inline-flex';
+        }
+
+        function applyCustomDates() {
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+            if (!from || !to) {
+                alert('Please select both From and To dates.');
+                return;
+            }
+            fetchDashboardData();
+        }
+
+        function toggleAutoRefresh(cb) {
+            if (cb.checked) {
+                autoRefreshInterval = setInterval(() => fetchDashboardData(true), 60000);
+            } else {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.section-pane').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('pane-' + tabId).classList.add('active');
+        }
+
+        function getAuthHeader() {
+            let curToken = localStorage.getItem('farmer_app_jwt') || localStorage.getItem('access-token') || localStorage.getItem('token');
+            let headers = { 'Content-Type': 'application/json' };
+            if (curToken) {
+                headers['Authorization'] = 'Bearer ' + curToken;
+            } else {
+                // Default Basic Auth fallback for Admin Analytics
+                headers['Authorization'] = 'Basic ' + btoa('admin:admin123');
+            }
+            return headers;
+        }
+
+        async function fetchAPI(endpoint) {
+            let url = '/api/v1/admin/analytics/' + endpoint;
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+
+            if (from && to && document.getElementById('customDateContainer').style.display !== 'none') {
+                url += `?from=${from}&to=${to}`;
+            } else if (currentRange) {
+                url += `?range=${currentRange}`;
+            }
+
+            try {
+                const res = await fetch(url, { headers: getAuthHeader() });
+                if (res.status === 401 || res.status === 403) {
+                    console.warn("Analytics Auth Warning for " + endpoint);
+                    return null;
+                }
+                return await res.json();
+            } catch (err) {
+                console.error("API error for " + endpoint, err);
+                return null;
+            }
+        }
+
+
+        async function fetchDashboardData(isRefresh = false) {
+            document.getElementById('lastUpdated').innerText = 'Updating...';
+
+            const summary = await fetchAPI('summary');
+            if (summary) renderSummary(summary);
+
+            const ordersTime = await fetchAPI('orders-over-time?interval=day');
+            if (ordersTime) renderOrdersOverTime(ordersTime);
+
+            const statusBreakdown = await fetchAPI('order-status-breakdown');
+            if (statusBreakdown) renderOrderStatus(statusBreakdown);
+
+            const funnel = await fetchAPI('fulfillment-funnel');
+            if (funnel) renderFunnel(funnel);
+
+            const abandoned = await fetchAPI('abandoned-orders');
+            if (abandoned) renderAbandoned(abandoned);
+
+            const farmerPerf = await fetchAPI('farmer-performance?limit=10');
+            if (farmerPerf) renderFarmerPerf(farmerPerf);
+
+            const farmerResp = await fetchAPI('farmer-response-time');
+            if (farmerResp) renderFarmerResponseTime(farmerResp);
+
+            const inactiveFarmers = await fetchAPI('inactive-farmers?days=30');
+            if (inactiveFarmers) renderInactiveFarmers(inactiveFarmers);
+
+            const topConsumers = await fetchAPI('top-consumers?limit=10');
+            if (topConsumers) renderTopConsumers(topConsumers);
+
+            const newReturning = await fetchAPI('new-vs-returning?interval=month');
+            if (newReturning) renderNewReturning(newReturning);
+
+            const catRev = await fetchAPI('category-breakdown');
+            if (catRev) renderCategoryRev(catRev);
+
+            const topProducts = await fetchAPI('top-products?limit=10');
+            if (topProducts) renderTopProducts(topProducts);
+
+            const lowStock = await fetchAPI('low-stock?threshold=10');
+            if (lowStock) renderLowStock(lowStock);
+
+            const deadStock = await fetchAPI('dead-stock?days=30');
+            if (deadStock) renderDeadStock(deadStock);
+
+            const salesLoc = await fetchAPI('sales-by-location');
+            if (salesLoc) renderSalesLocation(salesLoc);
+
+            const weekdayOrders = await fetchAPI('orders-by-weekday');
+            if (weekdayOrders) renderWeekdayOrders(weekdayOrders);
+
+            const heatmap = await fetchAPI('orders-heatmap');
+            if (heatmap) renderHeatmap(heatmap);
+
+            const userGrowth = await fetchAPI('user-growth?interval=month');
+            if (userGrowth) renderUserGrowth(userGrowth);
+
+            const payMethods = await fetchAPI('payment-methods');
+            if (payMethods) renderPaymentMethods(payMethods);
+
+            const now = new Date();
+            document.getElementById('lastUpdated').innerText = 'Updated: ' + now.toLocaleTimeString();
+        }
+
+        // Render Summary KPI Cards
+        function renderSummary(d) {
+            document.getElementById('kpi-total-orders').innerText = d.total_orders || 0;
+            document.getElementById('kpi-total-revenue').innerText = formatRupee(d.total_revenue);
+            document.getElementById('kpi-aov').innerText = formatRupee(d.avg_order_value);
+            document.getElementById('kpi-pending-orders').innerText = d.pending_orders || 0;
+            document.getElementById('kpi-confirmed-orders').innerText = d.confirmed_orders || 0;
+            document.getElementById('kpi-delivered-orders').innerText = d.delivered_orders || 0;
+            document.getElementById('kpi-farmers').innerText = d.total_farmers || 0;
+            document.getElementById('kpi-consumers').innerText = d.total_consumers || 0;
+            document.getElementById('kpi-conf-rate').innerText = (d.confirmation_rate_pct || 0) + '%';
+            document.getElementById('kpi-canc-rate').innerText = (d.cancellation_rate_pct || 0) + '%';
+            document.getElementById('kpi-repeat-rate').innerText = (d.repeat_customer_rate_pct || 0) + '%';
+            document.getElementById('kpi-pay-rate').innerText = (d.payment_success_rate_pct || 0) + '%';
+
+            // Growth Badges
+            const bOrders = document.getElementById('badge-orders');
+            const og = d.orders_growth_pct || 0;
+            bOrders.className = `kpi-badge ${og >= 0 ? 'badge-up' : 'badge-down'}`;
+            bOrders.innerHTML = `<i class="fa-solid fa-arrow-${og >= 0 ? 'up' : 'down'}"></i> ${og}% vs prev`;
+
+            const bRev = document.getElementById('badge-revenue');
+            const rg = d.revenue_growth_pct || 0;
+            bRev.className = `kpi-badge ${rg >= 0 ? 'badge-up' : 'badge-down'}`;
+            bRev.innerHTML = `<i class="fa-solid fa-arrow-${rg >= 0 ? 'up' : 'down'}"></i> ${rg}% vs prev`;
+        }
+
+        // Chart helper to create or update
+        function createOrUpdateChart(id, config) {
+            if (chartInstances[id]) chartInstances[id].destroy();
+            const ctx = document.getElementById(id).getContext('2d');
+            chartInstances[id] = new Chart(ctx, config);
+        }
+
+        function renderOrdersOverTime(data) {
+            const labels = data.map(i => i.period);
+            const orders = data.map(i => i.order_count);
+            const rev = data.map(i => i.revenue);
+
+            createOrUpdateChart('chartOrdersOverTime', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Revenue (₹)', data: rev, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', yAxisID: 'y1', fill: true },
+                        { label: 'Order Count', data: orders, borderColor: '#3b82f6', backgroundColor: '#3b82f6', yAxisID: 'y' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', title: { display: true, text: 'Orders' } },
+                        y1: { type: 'linear', position: 'right', title: { display: true, text: 'Revenue (₹)' }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        function renderOrderStatus(data) {
+            createOrUpdateChart('chartOrderStatus', {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(i => i.status),
+                    datasets: [{
+                        data: data.map(i => i.count),
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderFunnel(data) {
+            createOrUpdateChart('chartFunnel', {
+                type: 'bar',
+                data: {
+                    labels: data.map(i => `${i.stage} (${i.dropoff_pct}% drop)`),
+                    datasets: [{ label: 'Orders', data: data.map(i => i.count), backgroundColor: '#059669' }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderAbandoned(d) {
+            document.getElementById('abandonedCount').innerText = d.count || 0;
+            document.getElementById('abandonedRevenue').innerText = formatRupee(d.potential_revenue_lost);
+            const tbody = document.getElementById('tblAbandoned');
+            if (!d.list || d.list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No abandoned orders in this period.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = d.list.map(o => `
+                <tr>
+                    <td>#${o.order_id}</td>
+                    <td>${o.consumer_name}</td>
+                    <td>${o.phone_number}</td>
+                    <td>${formatRupee(o.amount)}</td>
+                    <td>${o.created_at}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderFarmerPerf(data) {
+            const labels = data.map(i => i.farmer_name);
+            createOrUpdateChart('chartFarmerPerf', {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Received', data: data.map(i => i.orders_received), backgroundColor: '#94a3b8' },
+                        { label: 'Confirmed', data: data.map(i => i.orders_confirmed), backgroundColor: '#10b981' },
+                        { label: 'Rejected', data: data.map(i => i.orders_rejected), backgroundColor: '#ef4444' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const tbody = document.getElementById('tblFarmerLeaderboard');
+            tbody.innerHTML = data.map(f => `
+                <tr>
+                    <td><strong>${f.farmer_name}</strong></td>
+                    <td>${f.location}</td>
+                    <td>${f.products_listed}</td>
+                    <td>${f.orders_received}</td>
+                    <td><span class="status-tag tag-paid">${f.orders_confirmed}</span></td>
+                    <td><span class="status-tag tag-unpaid">${f.orders_rejected}</span></td>
+                    <td><strong>${f.confirmation_rate_pct}%</strong></td>
+                    <td>${f.avg_response_time_hours} hrs</td>
+                    <td><strong>${formatRupee(f.total_revenue)}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderFarmerResponseTime(d) {
+            createOrUpdateChart('chartResponseTime', {
+                type: 'doughnut',
+                data: {
+                    labels: d.buckets.map(b => b.label),
+                    datasets: [{ data: d.buckets.map(b => b.count), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderInactiveFarmers(data) {
+            const tbody = document.getElementById('tblInactiveFarmers');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--primary);">All farmers are active!</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(f => `
+                <tr>
+                    <td><strong>${f.farmer_name}</strong></td>
+                    <td>${f.location}</td>
+                    <td>${f.last_listing_date}</td>
+                    <td>${f.last_confirmation_date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderTopConsumers(data) {
+            createOrUpdateChart('chartTopConsumers', {
+                type: 'bar',
+                data: {
+                    labels: data.map(i => i.consumer_name),
+                    datasets: [{ label: 'Total Spent (₹)', data: data.map(i => i.total_spent), backgroundColor: '#3b82f6' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderNewReturning(data) {
+            createOrUpdateChart('chartNewReturning', {
+                type: 'bar',
+                data: {
+                    labels: data.map(i => i.period),
+                    datasets: [
+                        { label: 'New Customers', data: data.map(i => i.new_customers), backgroundColor: '#10b981' },
+                        { label: 'Returning Customers', data: data.map(i => i.returning_customers), backgroundColor: '#6366f1' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+            });
+        }
+
+        function renderCategoryRev(data) {
+            createOrUpdateChart('chartCategoryRev', {
+                type: 'pie',
+                data: {
+                    labels: data.map(i => i.category),
+                    datasets: [{ data: data.map(i => i.revenue), backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderTopProducts(data) {
+            createOrUpdateChart('chartTopProducts', {
+                type: 'bar',
+                data: {
+                    labels: data.map(i => i.product_name),
+                    datasets: [{ label: 'Revenue (₹)', data: data.map(i => i.revenue), backgroundColor: '#059669' }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderLowStock(data) {
+            const tbody = document.getElementById('tblLowStock');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">All inventory levels healthy.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(p => `
+                <tr>
+                    <td><strong>${p.product_name}</strong></td>
+                    <td>${p.farmer_name}</td>
+                    <td>${p.category}</td>
+                    <td><span class="status-tag tag-unpaid">${p.stock_left} units left</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderDeadStock(data) {
+            const tbody = document.getElementById('tblDeadStock');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No dead stock detected.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(p => `
+                <tr>
+                    <td><strong>${p.product_name}</strong></td>
+                    <td>${p.farmer_name}</td>
+                    <td>${p.listed_on}</td>
+                    <td><span class="status-tag tag-pending">${p.stock} units</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSalesLocation(data) {
+            createOrUpdateChart('chartLocationSales', {
+                type: 'bar',
+                data: {
+                    labels: data.map(i => i.location),
+                    datasets: [{ label: 'Revenue (₹)', data: data.map(i => i.revenue), backgroundColor: '#3b82f6' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderWeekdayOrders(data) {
+            createOrUpdateChart('chartWeekdayOrders', {
+                type: 'bar',
+                data: {
+                    labels: data.map(i => i.weekday),
+                    datasets: [{ label: 'Orders Placed', data: data.map(i => i.order_count), backgroundColor: '#10b981' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderHeatmap(data) {
+            const container = document.getElementById('heatmapContainer');
+            const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            let html = '<div class="heatmap-grid">';
+
+            // Header row
+            html += '<div class="hm-cell hm-header">Day / Hr</div>';
+            for (let h = 0; h < 24; h++) html += `<div class="hm-cell hm-header">${h}h</div>`;
+
+            // Max count for scaling
+            const maxVal = Math.max(...data.map(d => d.order_count), 1);
+
+            weekdays.forEach(wd => {
+                html += `<div class="hm-cell hm-header">${wd.substring(0,3)}</div>`;
+                for (let h = 0; h < 24; h++) {
+                    const match = data.find(d => d.weekday === wd && d.hour === h);
+                    const cnt = match ? match.order_count : 0;
+                    const alpha = (cnt / maxVal).toFixed(2);
+                    const bg = cnt > 0 ? `rgba(5, 150, 105, ${Math.max(alpha, 0.15)})` : '#f1f5f9';
+                    const color = cnt / maxVal > 0.5 ? 'white' : 'var(--text-main)';
+                    html += `<div class="hm-cell" style="background:${bg}; color:${color};" title="${wd} ${h}:00 - ${cnt} orders">${cnt}</div>`;
+                }
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderUserGrowth(data) {
+            createOrUpdateChart('chartUserGrowth', {
+                type: 'line',
+                data: {
+                    labels: data.map(i => i.period),
+                    datasets: [
+                        { label: 'Cumulative Farmers', data: data.map(i => i.cumulative_farmers), borderColor: '#10b981', fill: false },
+                        { label: 'Cumulative Consumers', data: data.map(i => i.cumulative_consumers), borderColor: '#6366f1', fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderPaymentMethods(data) {
+            createOrUpdateChart('chartPaymentMethods', {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(i => i.method),
+                    datasets: [{ data: data.map(i => i.amount), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Export helper
+        async function exportAllCSV() {
+            const summary = await fetchAPI('summary');
+            if (!summary) return;
+            const keys = Object.keys(summary);
+            const vals = Object.values(summary);
+            let csv = keys.join(',') + '\n' + vals.join(',') + '\n';
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ecogreen_analytics_${currentRange}.csv`;
+            link.click();
+        }
+
+        async function downloadCSV(endpoint) {
+            const data = await fetchAPI(endpoint);
+            if (!data) return;
+            let rows = Array.isArray(data) ? data : (data.list || [data]);
+            if (rows.length === 0) return alert('No data to export.');
+            const headers = Object.keys(rows[0]);
+            let csv = headers.join(',') + '\n';
+            rows.forEach(r => {
+                csv += headers.map(h => JSON.stringify(r[h] ?? '')).join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ecogreen_${endpoint}.csv`;
+            link.click();
+        }
+
+        function downloadPNG(chartId) {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            const image = canvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.download = `${chartId}.png`;
+            link.href = image;
+            link.click();
+        }
+
+        function openPbiModal() {
+            document.getElementById('pbiModal').classList.add('active');
+        }
+
+        function closePbiModal() {
+            document.getElementById('pbiModal').classList.remove('active');
+        }
+
+        function copyEndpointUrl(path, btn) {
+            const fullUrl = window.location.origin + '/api/v1/admin/analytics' + path;
+            navigator.clipboard.writeText(fullUrl);
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            btn.style.background = '#dcfce7';
+            btn.style.color = '#15803d';
+            const toast = document.getElementById('pbiToastMsg');
+            if (toast) toast.innerText = 'Copied to clipboard: ' + fullUrl;
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = 'white';
+                btn.style.color = 'var(--text-main)';
+                if (toast) toast.innerText = '';
+            }, 2500);
+        }
+
+        async function testPbiConnection() {
+            const btn = document.getElementById('btnTestConn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
+            try {
+                const res = await fetch('/api/v1/admin/analytics/summary', {
+                    headers: { 'Authorization': 'Basic ' + btoa('admin:admin123') }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Connected (${data.total_orders} Orders)`;
+                    btn.style.background = '#dcfce7';
+                    btn.style.color = '#15803d';
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Connection Failed';
+                    btn.style.background = '#fee2e2';
+                    btn.style.color = '#b91c1c';
+                }
+            } catch (err) {
+                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Offline';
+            }
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-plug"></i> Test API Connection';
+                btn.style.background = '#ecfdf5';
+                btn.style.color = '#065f46';
+            }, 4000);
+        }
+
+        function copyMQueryCode() {
+            const baseUrl = window.location.origin + '/api/v1/admin/analytics';
+            const mCode = `let
+    Source = Json.Document(Web.Contents("${baseUrl}/summary", [Headers=[Authorization="Basic " & Binary.ToText(Text.ToBinary("admin:admin123"), BinaryEncoding.Base64)]]))
+in
+    Source`;
+            navigator.clipboard.writeText(mCode);
+            alert("Power Query M-Code copied to clipboard! In Power BI, click Advanced Editor and paste this snippet.");
+        }
+
+        // Initial Load
+        fetchDashboardData();
+    </script>
+</body>
+</html>

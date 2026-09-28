@@ -1156,9 +1156,14 @@
         let currentUser = JSON.parse(localStorage.getItem('farmer_app_user') || 'null');
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (currentUser && currentUser.user_type === 'admin') {
+                window.location.href = '/admin/dashboard';
+                return;
+            }
             updateNavAuthUI();
             loadProducts();
         });
+
 
         // Update Navbar Login/Profile UI
         function updateNavAuthUI() {
@@ -1784,10 +1789,18 @@
                             currentUser = { username: username, user_type: 'consumer' };
                         }
                         localStorage.setItem('farmer_app_user', JSON.stringify(currentUser));
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        if (jwtToken) localStorage.setItem('access-token', jwtToken);
+
+                        if (currentUser.user_type === 'admin') {
+                            window.location.href = '/admin/dashboard';
+                            return;
+                        }
                         
                         updateNavAuthUI();
                         showToast(`Welcome back, ${currentUser.username}!`);
                         closeModal('authModal');
+
                     } else {
                         // If user doesn't exist yet, automatically switch to register or offer registration
                         showToast(json.error || 'Invalid credentials', true);
