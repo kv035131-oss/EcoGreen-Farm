@@ -55,7 +55,12 @@ def patch_db_schema():
         from sqlalchemy import text
         with db.engine.connect() as conn:
             statements = [
+                "ALTER TABLE user ADD COLUMN status VARCHAR(50)",
                 "ALTER TABLE user ADD COLUMN last_active_at DATETIME",
+                "ALTER TABLE user ADD COLUMN phone VARCHAR(50)",
+                "ALTER TABLE user ADD COLUMN whatsapp_opt_in BOOLEAN DEFAULT 0",
+                "ALTER TABLE user ADD COLUMN last_inbound_whatsapp_at DATETIME",
+                "ALTER TABLE user ADD COLUMN notification_language VARCHAR(10) DEFAULT 'en'",
                 "ALTER TABLE product ADD COLUMN created_at DATETIME",
                 "ALTER TABLE \"order\" ADD COLUMN confirmed_at DATETIME",
                 "ALTER TABLE \"order\" ADD COLUMN cancelled_at DATETIME",
@@ -84,13 +89,17 @@ def create_app():
     with app.app_context():
         patch_db_schema()
         db.create_all()
-        seed_data()
         from server.seed_demo import seed_demo_data
         seed_demo_data()
 
+    from server.notification_routes import notification_bp
+    from server.scheduler import init_scheduler
 
     app.register_blueprint(product_routes)
     app.register_blueprint(analytics_bp)
+    app.register_blueprint(notification_bp)
+
+    init_scheduler(app)
 
     @app.cli.command('create-admin')
     @click.option('--username', default='admin', help='Admin username')

@@ -574,29 +574,6 @@
             font-weight: 700;
             color: var(--text-main);
         }
-
-        .code-box {
-            background: #1e293b;
-            color: #38bdf8;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            margin: 0.5rem 0;
-            word-break: break-all;
-        }
-
-        /* Loading Skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
     </style>
 </head>
 <body>
@@ -662,6 +639,7 @@
             <button class="tab-btn" onclick="switchTab('products-inv', this)"><i class="fa-solid fa-boxes-stacked"></i> Products & Stock</button>
             <button class="tab-btn" onclick="switchTab('geography', this)"><i class="fa-solid fa-map-location-dot"></i> Geography & Timing</button>
             <button class="tab-btn" onclick="switchTab('growth-pay', this)"><i class="fa-solid fa-credit-card"></i> Growth & Payments</button>
+            <button class="tab-btn" onclick="switchTab('whatsapp-notifs', this)"><i class="fa-brands fa-whatsapp"></i> WhatsApp Notifications</button>
         </div>
     </div>
 
@@ -973,6 +951,96 @@
             </div>
         </section>
 
+        <!-- SECTION 8: WHATSAPP NOTIFICATIONS -->
+        <section id="pane-whatsapp-notifs" class="section-pane">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Total Logs</span><div class="kpi-icon" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></div></div>
+                    <div class="kpi-value" id="kpi-notif-total">-</div>
+                    <div class="kpi-badge badge-neutral">All Channels</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Real Sent</span><div class="kpi-icon" style="color: #059669;"><i class="fa-solid fa-paper-plane"></i></div></div>
+                    <div class="kpi-value" id="kpi-notif-sent">-</div>
+                    <div class="kpi-badge badge-positive">Live API</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Simulated</span><div class="kpi-icon" style="color: #0284c7;"><i class="fa-solid fa-vial"></i></div></div>
+                    <div class="kpi-value" id="kpi-notif-simulated">-</div>
+                    <div class="kpi-badge badge-neutral">Simulate Mode</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Inbound Replies</span><div class="kpi-icon" style="color: #7c3aed;"><i class="fa-solid fa-reply"></i></div></div>
+                    <div class="kpi-value" id="kpi-notif-received">-</div>
+                    <div class="kpi-badge badge-positive">Farmer Replies</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header"><span class="kpi-title">Delivery Rate</span><div class="kpi-icon" style="color: #059669;"><i class="fa-solid fa-circle-check"></i></div></div>
+                    <div class="kpi-value" id="kpi-notif-rate">-</div>
+                    <div class="kpi-badge badge-positive">Success %</div>
+                </div>
+            </div>
+
+            <div class="charts-row" style="margin-top: 1.5rem;">
+                <div class="chart-card" style="grid-column: span 2;">
+                    <div class="chart-card-header">
+                        <div class="chart-title"><i class="fa-solid fa-chart-area"></i> Daily WhatsApp Notification Volume</div>
+                        <div class="chart-actions">
+                            <button onclick="sendTestEmailAdmin()" class="btn-action" style="background: #059669; color: white; border: none;"><i class="fa-solid fa-paper-plane"></i> Send Test Email</button>
+                            <button onclick="fetchNotificationLogs()" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> Refresh Logs</button>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 250px;"><canvas id="chartNotifDaily"></canvas></div>
+                </div>
+            </div>
+
+            <div class="table-card" style="margin-top: 1.5rem;">
+                <div class="table-card-header">
+                    <div class="table-title"><i class="fa-solid fa-list-check"></i> WhatsApp Notification Logs & Inbound Replies</div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select id="notifStatusFilter" onchange="fetchNotificationLogs()" class="date-input" style="padding: 0.3rem 0.6rem;">
+                            <option value="">All Statuses</option>
+                            <option value="sent">Sent</option>
+                            <option value="simulated">Simulated</option>
+                            <option value="failed">Failed</option>
+                            <option value="received">Received (Inbound)</option>
+                        </select>
+                        <select id="notifEventFilter" onchange="fetchNotificationLogs()" class="date-input" style="padding: 0.3rem 0.6rem;">
+                            <option value="">All Event Types</option>
+                            <option value="order_placed_farmer">order_placed_farmer</option>
+                            <option value="payment_success_consumer">payment_success_consumer</option>
+                            <option value="order_accepted_consumer">order_accepted_consumer</option>
+                            <option value="order_rejected_consumer">order_rejected_consumer</option>
+                            <option value="order_delivered_consumer">order_delivered_consumer</option>
+                            <option value="farmer_order_reminder">farmer_order_reminder</option>
+                            <option value="low_stock_farmer">low_stock_farmer</option>
+                            <option value="welcome_opt_in">welcome_opt_in</option>
+                            <option value="inbound_reply">inbound_reply</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Event Type</th>
+                                <th>Message</th>
+                                <th>Channel</th>
+                                <th>Status</th>
+                                <th>SID / Error</th>
+                                <th>Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notifLogsTableBody">
+                            <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading notification logs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
     </main>
 
 
@@ -1010,7 +1078,131 @@
             return '₹' + num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
         }
 
-        function setRange(range, el) {
+        // Check URL route for direct tab navigation (e.g. /admin/notifications)
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.location.pathname.includes('/notifications')) {
+                const tabBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes('whatsapp-notifs'));
+                if (tabBtn) switchTab('whatsapp-notifs', tabBtn);
+            }
+        });
+
+        async function fetchNotificationStats() {
+            try {
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const res = await fetch('/api/v1/admin/notifications/stats', { headers });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    const s = json.stats;
+                    document.getElementById('kpi-notif-total').innerText = s.total || 0;
+                    document.getElementById('kpi-notif-sent').innerText = s.sent || 0;
+                    document.getElementById('kpi-notif-simulated').innerText = s.simulated || 0;
+                    document.getElementById('kpi-notif-received').innerText = s.received || 0;
+                    document.getElementById('kpi-notif-rate').innerText = s.success_rate + '%';
+
+                    renderNotifDailyChart(json.daily_chart || []);
+                }
+            } catch(e) {
+                console.error("Error loading notification stats:", e);
+            }
+        async function sendTestEmailAdmin() {
+            const targetEmail = prompt("Enter email address to send test email to:", "ajay@ecogreen.com");
+            if (!targetEmail) return;
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch('/api/v1/admin/notifications/test-email', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ email: targetEmail })
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    alert("✅ SUCCESS!\n" + data.message + "\nMessage ID: " + data.msg_id);
+                } else {
+                    alert("❌ EMAIL FAILURE!\n" + (data.error || "Failed to send email via SMTP."));
+                }
+                fetchNotificationLogs();
+                fetchNotificationStats();
+            } catch(e) {
+                alert("Error sending test email: " + e.message);
+            }
+        }
+
+        async function fetchNotificationLogs() {
+            try {
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const status = document.getElementById('notifStatusFilter').value;
+                const event_type = document.getElementById('notifEventFilter').value;
+
+                let url = '/api/v1/admin/notifications/logs?page=1&per_page=100';
+                if (status) url += `&status=${status}`;
+                if (event_type) url += `&event_type=${event_type}`;
+
+                const res = await fetch(url, { headers });
+                const json = await res.json();
+                const tbody = document.getElementById('notifLogsTableBody');
+
+                if (json.status === 'success' && json.data.length > 0) {
+                    tbody.innerHTML = json.data.map(l => `
+                        <tr>
+                            <td>#${l.id}</td>
+                            <td><strong>${escapeHtml(l.username || 'User')}</strong> (ID: ${l.user_id || 'N/A'})</td>
+                            <td><code style="color: #0284c7;">${l.event_type}</code></td>
+                            <td style="max-width: 320px; font-size: 0.82rem; white-space: pre-wrap;">${escapeHtml(l.message)}</td>
+                            <td><span class="badge-status" style="background:#ecfdf5; color:#065f46;">${l.channel}</span></td>
+                            <td>
+                                <span class="badge-status" style="${
+                                    l.status === 'sent' ? 'background:#dcfce7; color:#15803d;' :
+                                    l.status === 'simulated' ? 'background:#e0f2fe; color:#0369a1;' :
+                                    l.status === 'received' ? 'background:#f3e8ff; color:#6b21a8;' :
+                                    'background:#fee2e2; color:#b91c1c;'
+                                }">${l.status.toUpperCase()}</span>
+                            </td>
+                            <td style="font-size: 0.78rem; font-family: monospace;">${escapeHtml(l.provider_message_id || l.error || '-')}</td>
+                            <td style="font-size: 0.8rem; color: var(--text-muted);">${l.created_at || '-'}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No notification logs found.</td></tr>`;
+                }
+            } catch(e) {
+                console.error("Error loading notification logs:", e);
+            }
+        }
+
+        function renderNotifDailyChart(dailyData) {
+            const ctx = document.getElementById('chartNotifDaily');
+            if (!ctx) return;
+            if (chartInstances['notifDaily']) chartInstances['notifDaily'].destroy();
+
+            const labels = dailyData.map(d => d.date);
+            const counts = dailyData.map(d => d.count);
+
+            chartInstances['notifDaily'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'WhatsApp Notifications & Replies',
+                        data: counts,
+                        borderColor: '#25d366',
+                        backgroundColor: 'rgba(37, 211, 102, 0.15)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
             currentRange = range;
             document.querySelectorAll('.controls-bar .pill-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
@@ -1045,8 +1237,14 @@
         function switchTab(tabId, el) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.section-pane').forEach(p => p.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('pane-' + tabId).classList.add('active');
+            if (el) el.classList.add('active');
+            const pane = document.getElementById('pane-' + tabId);
+            if (pane) pane.classList.add('active');
+
+            if (tabId === 'whatsapp-notifs') {
+                fetchNotificationStats();
+                fetchNotificationLogs();
+            }
         }
 
         function getAuthHeader() {
@@ -1573,4 +1771,3 @@ in
     </script>
 </body>
 </html>
-

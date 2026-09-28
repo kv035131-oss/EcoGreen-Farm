@@ -2,6 +2,8 @@
 -- Usage: psql -U postgres -d ecogreen_db -f backend/database/schema.sql
 
 -- Drop existing tables if re-initializing
+DROP TABLE IF EXISTS "notification" CASCADE;
+DROP TABLE IF EXISTS "notification_log" CASCADE;
 DROP TABLE IF EXISTS "transaction" CASCADE;
 DROP TABLE IF EXISTS "reviews" CASCADE;
 DROP TABLE IF EXISTS "search" CASCADE;
@@ -19,7 +21,11 @@ CREATE TABLE "user" (
     user_type VARCHAR(50), -- farmer, consumer, admin
     status VARCHAR(50),
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_active_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    last_active_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    phone VARCHAR(50),
+    whatsapp_opt_in BOOLEAN DEFAULT FALSE,
+    last_inbound_whatsapp_at TIMESTAMP WITHOUT TIME ZONE,
+    notification_language VARCHAR(10) DEFAULT 'en'
 );
 
 -- 2. Product Table
@@ -88,9 +94,33 @@ CREATE TABLE "search" (
     timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 7. NotificationLog Table
+CREATE TABLE "notification_log" (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES "user"(id) ON DELETE SET NULL,
+    channel VARCHAR(50) DEFAULT 'whatsapp',
+    event_type VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'queued',
+    provider_message_id VARCHAR(255),
+    error TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. Notification (In-App) Table
+CREATE TABLE "notification" (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX idx_user_type ON "user"(user_type);
 CREATE INDEX idx_product_category ON "product"(category);
 CREATE INDEX idx_order_status ON "order"(order_status);
 CREATE INDEX idx_order_date ON "order"(transaction_date);
 CREATE INDEX idx_transaction_order ON "transaction"(order_id);
+CREATE INDEX idx_notif_user ON "notification_log"(user_id);

@@ -17,8 +17,42 @@ from server.razorpay_service import (
     verify_payment_signature,
     verify_webhook_signature
 )
+from server.notification_service import notify
 
 product_routes = Blueprint('product_routes', __name__)
+
+def trigger_order_notifications(order, event_type):
+    try:
+        product = Product.query.get(order.product_id)
+        consumer = User.query.get(order.user_id)
+        farmer = User.query.get(product.user_id) if product else None
+
+        prod_name = product.name if product else 'Produce'
+        cons_name = consumer.username if consumer else 'Customer'
+        farmer_name = farmer.username if farmer else 'Farmer'
+        qty = getattr(product, 'quantity', 1)
+
+        if event_type == 'order_placed' and farmer:
+            notify(farmer, 'order_placed_farmer', order_id=order.id, quantity=qty, product_name=prod_name, consumer_name=cons_name)
+
+        elif event_type == 'payment_success':
+            if consumer:
+                notify(consumer, 'payment_success_consumer', receipt_no=f"RCP-{order.id}", amount=f"{order.amount:,.2f}", order_id=order.id, product_name=prod_name)
+            if farmer:
+                notify(farmer, 'payment_success_farmer', amount=f"{order.amount:,.2f}", order_id=order.id, product_name=prod_name, consumer_name=cons_name)
+
+        elif event_type == 'order_accepted' and consumer:
+            notify(consumer, 'order_accepted_consumer', farmer_name=farmer_name, order_id=order.id, product_name=prod_name)
+
+        elif event_type == 'order_rejected' and consumer:
+            notify(consumer, 'order_rejected_consumer', farmer_name=farmer_name, order_id=order.id, product_name=prod_name)
+
+        elif event_type == 'order_delivered' and consumer:
+            notify(consumer, 'order_delivered_consumer', order_id=order.id, product_name=prod_name)
+
+    except Exception as e:
+        print("Notification trigger error (swallowed):", e)
+
 consumer_key = '0gc0uEwGcFcoxtHXIySEPF5ek4k8uvhf'
 consumer_secret = '6UvaqPmZWjdDlbGj'
 my_endpoint = 'https://c001-41-80-116-223.ngrok-free.app' #callback url
@@ -29,6 +63,10 @@ def home():
 
 @product_routes.route('/admin/dashboard')
 def admin_dashboard():
+    return render_template('admin_dashboard.html')
+
+@product_routes.route('/admin/notifications')
+def admin_notifications():
     return render_template('admin_dashboard.html')
 
 
@@ -92,6 +130,7 @@ def pay_order():
             )
             db.session.add(order)
             db.session.commit()
+            trigger_order_notifications(order, 'order_placed')
 
         if not order:
             return jsonify({'error': 'Order not found', 'status': 'error'}), 404
@@ -116,6 +155,7 @@ def pay_order():
             order.payment_status = 'Paid'
             db.session.add(txn)
             db.session.commit()
+            trigger_order_notifications(order, 'payment_success')
 
             return jsonify({
                 'simulate': True,
@@ -182,6 +222,7 @@ def verify_payment():
             order = Order.query.get(txn.order_id)
             if order:
                 order.payment_status = 'Paid'
+                trigger_order_notifications(order, 'payment_success')
 
             db.session.commit()
             return jsonify({
@@ -288,6 +329,11 @@ def create_product():
         )
         db.session.add(product)
         db.session.commit()
+
+        if product.quantity < 10 and product.user_id:
+            farmer = User.query.get(product.user_id)
+            if farmer:
+                notify(farmer, 'low_stock_farmer', product_name=product.name, quantity=product.quantity)
         return jsonify({'message': 'Product created successfully', 'status': 'success', 'product': product.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
@@ -423,12 +469,15 @@ def update_order_status(order_id):
         now = datetime.utcnow()
         if new_status == 'Confirmed' and not order.confirmed_at:
             order.confirmed_at = now
+            trigger_order_notifications(order, 'order_accepted')
         elif new_status in ['Rejected', 'Cancelled'] and not order.cancelled_at:
             order.cancelled_at = now
+            trigger_order_notifications(order, 'order_rejected')
         elif new_status == 'Delivered' and not order.delivered_at:
             order.delivered_at = now
             if not order.confirmed_at:
                 order.confirmed_at = now
+            trigger_order_notifications(order, 'order_delivered')
 
         db.session.commit()
 
@@ -456,6 +505,7 @@ def mark_order_delivered(order_id):
         if not order.confirmed_at:
             order.confirmed_at = now
         db.session.commit()
+        trigger_order_notifications(order, 'order_delivered')
 
         return jsonify({
             'message': 'Order marked as Delivered',
@@ -592,6 +642,7 @@ def create_order():
         )
         db.session.add(order)
         db.session.commit()
+        trigger_order_notifications(order, 'order_placed')
         return jsonify({
             'message': 'Order created successfully',
             'status': 'success',

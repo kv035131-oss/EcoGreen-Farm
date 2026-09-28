@@ -344,6 +344,38 @@ curl -u "admin:admin123" "http://localhost:5000/api/v1/admin/analytics/user-grow
 
 ---
 
+## 📱 WhatsApp Notifications System
+
+EcoGreen includes a multi-language **WhatsApp Notification Engine** with a built-in **SIMULATE mode** so all features work out-of-the-box with zero credentials required.
+
+- WhatsApp provider: Meta Cloud API (setup instructions coming)
+
+---
+
+## 📧 Brevo SMTP Email Notifications
+
+EcoGreen supports transactional email delivery to farmers and consumers via **Brevo SMTP Relay** (formerly Sendinblue).
+
+### Brevo Setup Instructions:
+1. **Create a free Brevo account:** Sign up at [brevo.com](https://www.brevo.com).
+2. **Get SMTP Credentials:** Go to **Transactional** > **SMTP & API** in your Brevo dashboard and copy your **SMTP Key**.
+3. **Verify Sender Email (Important):**
+   > [!IMPORTANT]
+   > In Brevo Dashboard under **Senders & IP**, make sure the email address you set in `SENDER_EMAIL` is **added and verified as an authorized sender**. Brevo will reject emails sent from unverified email addresses with a 550 sender error.
+4. **Configure `.env`**:
+   ```env
+   EMAIL_NOTIFY_MODE=smtp
+   SMTP_SERVER=smtp-relay.brevo.com
+   SMTP_PORT=587
+   SMTP_USERNAME=your_brevo_login_email@domain.com
+   SMTP_PASSWORD=your_brevo_smtp_key
+   SENDER_EMAIL=your_verified_sender@domain.com
+   ```
+5. **Test Delivery & Diagnostics:**
+   - CLI Test: Run `python send_test_email.py <recipient_email>` to test transmission and view detailed SMTP status codes.
+   - Set Farmer Email: Run `python set_farmer_email.py <email_address>` to update farmer Ajay's email in the database.
+
+
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
