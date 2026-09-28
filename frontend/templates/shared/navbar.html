@@ -1,0 +1,46 @@
+<header>
+    <div class="nav-container">
+        <a href="/" class="logo">
+            <i class="fa-solid fa-leaf"></i>
+            <span class="brand-text">EcoGreen</span>
+        </a>
+
+        <div class="search-bar-container" style="position: relative; width: 320px;">
+            <input type="text" id="global-search-input" placeholder="Search fresh produce..." style="width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border-radius: 9999px; border: 1px solid var(--border-color); font-size: 0.9rem; outline: none; background: #f8fafc;">
+            <i class="fa-solid fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+        </div>
+
+        <ul class="nav-links">
+            <li><a href="/" class="nav-link"><i class="fa-solid fa-store"></i> Marketplace</a></li>
+            <li id="nav-farmer-link" style="display: none;"><a href="#farmer-section" class="nav-link"><i class="fa-solid fa-tractor"></i> Farmer Dashboard</a></li>
+            <li id="nav-orders-link" style="display: none;"><a href="#my-orders-section" class="nav-link"><i class="fa-solid fa-bag-shopping"></i> My Orders</a></li>
+            <li id="nav-admin-link" style="display: none;"><a href="/admin/dashboard" class="nav-link"><i class="fa-solid fa-chart-line"></i> Admin BI</a></li>
+            
+            <!-- In-App Notification Bell -->
+            <li id="nav-notif-bell" style="position: relative; display: none;">
+                <button id="notif-bell-btn" style="background: none; border: none; font-size: 1.2rem; color: var(--text-main); cursor: pointer; position: relative; padding: 0.4rem;">
+                    <i class="fa-regular fa-bell"></i>
+                    <span id="notif-badge" style="display: none; position: absolute; top: 0; right: 0; background: var(--danger); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center;">0</span>
+                </button>
+                <div id="notif-dropdown" style="display: none; position: absolute; right: 0; top: 100%; width: 320px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 1000; padding: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem;">
+                        <h4 style="font-size: 0.9rem; font-weight: 700;">Notifications</h4>
+                        <button onclick="markAllNotificationsRead()" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: 600;">Mark all as read</button>
+                    </div>
+                    <div id="notif-list" style="max-height: 250px; overflow-y: auto;">
+                        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;">No notifications</p>
+                    </div>
+                </div>
+            </li>
+
+            <li id="nav-auth-buttons">
+                <button onclick="openAuthModal('login')" class="btn btn-secondary btn-sm">Log In</button>
+                <button onclick="openAuthModal('register')" class="btn btn-primary btn-sm">Register</button>
+            </li>
+            <li id="nav-user-profile" style="display: none; align-items: center; gap: 0.75rem;">
+                <span id="user-display-name" style="font-weight: 600; font-size: 0.9rem; color: #065f46;"></span>
+                <button onclick="logoutUser()" class="btn btn-secondary btn-sm" title="Log Out"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </li>
+        </ul>
+    </div>
+</header>
