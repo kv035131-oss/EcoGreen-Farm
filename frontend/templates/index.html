@@ -923,10 +923,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Produce Image URL</label>
-                    <input type="url" id="prodImage" class="form-input" placeholder="https://images.unsplash.com/..." required>
+                    <label class="form-label">Upload Photo from Device (Local Storage)</label>
+                    <input type="file" id="prodImageFile" class="form-input" accept="image/*">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Select an image file from your computer or phone.</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">OR Enter Image URL / Use Preset</label>
+                    <input type="url" id="prodImage" class="form-input" placeholder="https://images.unsplash.com/...">
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Quick Preset Image:</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Quick Presets:</span>
                         <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500')">Tomatoes</button>
                         <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500')">Carrots</button>
                         <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500')">Honey</button>
@@ -1603,8 +1609,13 @@
                 formData.append('user_id', currentUser.id);
             }
 
-            const imageUrl = document.getElementById('prodImage').value;
-            if (imageUrl) formData.append('image', imageUrl);
+            const fileInput = document.getElementById('prodImageFile');
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                formData.append('image', fileInput.files[0]);
+            } else {
+                const imageUrl = document.getElementById('prodImage').value;
+                if (imageUrl) formData.append('image', imageUrl);
+            }
 
             try {
                 const headers = {};

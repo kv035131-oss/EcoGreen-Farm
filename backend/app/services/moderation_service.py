@@ -77,7 +77,8 @@ def _simulate_moderation(image_input, declared_category, declared_name):
     """
     Deterministic rule engine for SIMULATE mode testing.
     """
-    combined_text = f"{declared_name} {declared_category} {str(image_input)}".lower()
+    file_name = getattr(image_input, 'filename', '') or str(image_input)
+    combined_text = f"{declared_name} {declared_category} {file_name}".lower()
 
     # Check prohibited keywords
     for keyword in PROHIBITED_KEYWORDS:

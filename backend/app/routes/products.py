@@ -54,7 +54,12 @@ def create_product():
                 result = cloudinary.uploader.upload(image_file)
                 image_url = result.get('secure_url')
             except Exception:
-                image_url = data.get('image', 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500')
+                import base64
+                image_bytes = image_file.read()
+                image_file.seek(0)
+                b64 = base64.b64encode(image_bytes).decode('utf-8')
+                mime = image_file.mimetype or 'image/jpeg'
+                image_url = f"data:{mime};base64,{b64}"
         else:
             image_url = data.get('image', 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500')
 
