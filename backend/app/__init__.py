@@ -5,6 +5,7 @@ Initializes Flask app, extensions, blueprints, and background jobs.
 
 import os
 from flask import Flask
+from sqlalchemy import text
 
 from backend.app.config import DevelopmentConfig, ProductionConfig, TestingConfig
 from backend.app.extensions import db, migrate, jwt
@@ -28,6 +29,32 @@ CONFIG_MAP = {
     'production': ProductionConfig,
     'testing': TestingConfig
 }
+
+
+def patch_database_schema(app):
+    """Auto-patches missing SQLite columns if migrating legacy database files."""
+    with app.app_context():
+        try:
+            db.create_all()
+            statements = [
+                'ALTER TABLE user ADD COLUMN phone VARCHAR(50)',
+                'ALTER TABLE user ADD COLUMN whatsapp_opt_in BOOLEAN DEFAULT 0',
+                'ALTER TABLE user ADD COLUMN last_inbound_whatsapp_at DATETIME',
+                "ALTER TABLE user ADD COLUMN notification_language VARCHAR(10) DEFAULT 'en'",
+                'ALTER TABLE product ADD COLUMN created_at DATETIME',
+                'ALTER TABLE "order" ADD COLUMN confirmed_at DATETIME',
+                'ALTER TABLE "order" ADD COLUMN cancelled_at DATETIME',
+                'ALTER TABLE "order" ADD COLUMN delivered_at DATETIME',
+                'ALTER TABLE "transaction" ADD COLUMN payment_method VARCHAR(50)'
+            ]
+            for stmt in statements:
+                try:
+                    db.session.execute(text(stmt))
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+        except Exception:
+            pass
 
 
 def create_app(config_name=None):
@@ -74,6 +101,10 @@ def create_app(config_name=None):
 
     # Register CLI commands
     register_cli_commands(app)
+
+    # Auto-patch schema for SQLite compatibility
+    if not app.config.get('TESTING'):
+        patch_database_schema(app)
 
     # Initialize Background Scheduler (skipped during testing or if disabled)
     if not app.config.get('TESTING') and not os.environ.get('DISABLE_SCHEDULER'):
