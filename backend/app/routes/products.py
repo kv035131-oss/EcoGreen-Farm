@@ -26,19 +26,29 @@ def create_product():
         data = request.form if (request.form and len(request.form) > 0) else (request.json or {})
         current_user_id = get_jwt_identity()
 
-        user_id = data.get('user_id')
+        user_id_raw = data.get('user_id')
+        user_id = None
+        if user_id_raw and str(user_id_raw).strip() not in ('', 'null', 'undefined'):
+            try:
+                user_id = int(user_id_raw)
+            except (ValueError, TypeError):
+                user_id = None
+
         if not user_id and current_user_id:
-            user_id = int(current_user_id)
+            try:
+                user_id = int(current_user_id)
+            except (ValueError, TypeError):
+                user_id = None
 
         if user_id:
-            user = User.query.get(int(user_id))
+            user = User.query.get(user_id)
             if user and user.user_type == 'admin':
                 return jsonify({'error': 'Admins are not allowed to create products.', 'status': 'error'}), 403
 
             # Security / Abuse Prevention: Rate limit max 20 listings per farmer per hour
             one_hour_ago = datetime.utcnow() - timedelta(hours=1)
             recent_listings_count = Product.query.filter(
-                Product.user_id == int(user_id),
+                Product.user_id == user_id,
                 Product.created_at >= one_hour_ago
             ).count()
 
@@ -66,12 +76,23 @@ def create_product():
         if not image_url or image_url.strip() == '':
             image_url = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'
 
-        name = data.get('name', 'Fresh Produce').strip()
-        price = float(data.get('price', 10.0))
-        quantity = int(data.get('quantity', 1))
-        location = data.get('location', 'Local Farm').strip()
-        description = data.get('description', 'Fresh farm produce.').strip()
-        category = data.get('category', 'Vegetables').strip()
+        name = data.get('name', 'Fresh Produce').strip() or 'Fresh Produce'
+
+        price_raw = data.get('price')
+        try:
+            price = float(price_raw) if (price_raw is not None and str(price_raw).strip() != '') else 10.0
+        except (ValueError, TypeError):
+            price = 10.0
+
+        quantity_raw = data.get('quantity')
+        try:
+            quantity = int(quantity_raw) if (quantity_raw is not None and str(quantity_raw).strip() != '') else 1
+        except (ValueError, TypeError):
+            quantity = 1
+
+        location = (data.get('location') or 'Local Farm').strip()
+        description = (data.get('description') or 'Fresh farm produce.').strip()
+        category = (data.get('category') or 'Vegetables').strip()
 
         # Step 1: Save product with initial pending status
         product = Product(

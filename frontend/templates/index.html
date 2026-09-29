@@ -917,9 +917,23 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Farm Location</label>
-                    <input type="text" id="prodLocation" class="form-input" placeholder="e.g. Green Valley Farm, Nakuru" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="prodCategory" class="form-input">
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Dairy & Eggs">Dairy & Eggs</option>
+                            <option value="Honey">Honey</option>
+                            <option value="Grains">Grains</option>
+                            <option value="Organic Spices">Organic Spices</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Farm Location</label>
+                        <input type="text" id="prodLocation" class="form-input" placeholder="e.g. Green Valley Farm, Nakuru" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1586,6 +1600,18 @@
             }
         }
 
+        // Set Quick Preset Image URL
+        function setPresetImage(url) {
+            const imgInput = document.getElementById('prodImage');
+            if (imgInput) {
+                imgInput.value = url;
+            }
+            const fileInput = document.getElementById('prodImageFile');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+
         // Open Add Product Modal
         function openAddProductModal() {
             if (!currentUser) {
@@ -1605,6 +1631,12 @@
             formData.append('quantity', document.getElementById('prodQuantity').value);
             formData.append('location', document.getElementById('prodLocation').value);
             formData.append('description', document.getElementById('prodDesc').value);
+
+            const categoryElem = document.getElementById('prodCategory');
+            if (categoryElem) {
+                formData.append('category', categoryElem.value);
+            }
+
             if (currentUser && currentUser.id) {
                 formData.append('user_id', currentUser.id);
             }
@@ -1632,9 +1664,20 @@
                     throw new Error(json.error || json.message || 'Failed to create product listing');
                 }
 
+                const modStatus = json.moderation_status || json.status;
+                if (modStatus === 'rejected') {
+                    showToast(json.message || 'Product rejected by moderation filter.', true);
+                    return;
+                }
+
                 closeModal('addProductModal');
                 document.getElementById('addProductForm').reset();
-                showToast('Produce successfully listed!');
+
+                if (modStatus === 'needs_review') {
+                    showToast('Listing submitted! Pending admin review before appearing in marketplace.', false);
+                } else {
+                    showToast(json.message || 'Produce successfully listed and published!');
+                }
                 await loadProducts();
             } catch (err) {
                 console.error('Add product error:', err);

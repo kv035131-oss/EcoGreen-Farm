@@ -6,7 +6,7 @@
 <div class="nav-container" style="padding-top: 2rem; padding-bottom: 2rem; flex-direction: column; align-items: stretch; gap: 2rem;">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2><i class="fa-solid fa-tractor" style="color: var(--primary);"></i> Farmer Produce Management</h2>
-        <button onclick="document.getElementById('add-produce-modal').classList.add('active')" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add New Produce</button>
+        <button onclick="openAddProductModal()" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add New Produce</button>
     </div>
     
     <div id="farmer-products-grid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
