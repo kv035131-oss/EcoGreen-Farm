@@ -17,7 +17,6 @@ from backend.app.extensions import db
 def patch_database_schema():
     app = create_app()
     with app.app_context():
-        # Ensure base tables exist
         db.create_all()
 
         statements = [
@@ -29,7 +28,9 @@ def patch_database_schema():
             'ALTER TABLE "order" ADD COLUMN confirmed_at DATETIME',
             'ALTER TABLE "order" ADD COLUMN cancelled_at DATETIME',
             'ALTER TABLE "order" ADD COLUMN delivered_at DATETIME',
-            'ALTER TABLE transaction ADD COLUMN payment_method VARCHAR(50)'
+            'ALTER TABLE "transaction" ADD COLUMN user_id INTEGER',
+            'ALTER TABLE "transaction" ADD COLUMN payment_method VARCHAR(50)',
+            'ALTER TABLE "transaction" ADD COLUMN transaction_date DATETIME'
         ]
 
         for stmt in statements:
@@ -39,7 +40,6 @@ def patch_database_schema():
                 print(f"[Schema Patch Success] {stmt}")
             except Exception as e:
                 db.session.rollback()
-                # Ignore duplicate column errors if already added
                 print(f"[Schema Patch Note] Column already exists or skipped: {e}")
 
 if __name__ == '__main__':
