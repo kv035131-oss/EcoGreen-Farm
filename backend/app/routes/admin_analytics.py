@@ -30,32 +30,68 @@ def get_summary():
         return jsonify(cached), 200
 
     order_query = Order.query
-    txn_query = Transaction.query.filter_by(status='Success')
-
     if start_date and end_date:
         order_query = order_query.filter(Order.transaction_date >= start_date, Order.transaction_date <= end_date)
-        txn_query = txn_query.filter(Transaction.transaction_date >= start_date, Transaction.transaction_date <= end_date)
-
-    total_revenue = db.session.query(func.sum(Transaction.amount)).filter(
-        Transaction.status == 'Success',
-        *( [Transaction.transaction_date >= start_date, Transaction.transaction_date <= end_date] if start_date else [] )
-    ).scalar() or 0.0
 
     total_orders = order_query.count()
-    completed_orders = order_query.filter(Order.order_status.in_(['Confirmed', 'Delivered'])).count()
-    active_farmers = User.query.filter_by(user_type='farmer', status='Active').count()
-    active_consumers = User.query.filter_by(user_type='consumer', status='Active').count()
+    pending_orders = order_query.filter(Order.order_status == 'Pending').count()
+    confirmed_orders = order_query.filter(Order.order_status == 'Confirmed').count()
+    delivered_orders = order_query.filter(Order.order_status == 'Delivered').count()
+    cancelled_orders = order_query.filter(Order.order_status == 'Cancelled').count()
+    completed_orders = confirmed_orders + delivered_orders
+
+    total_revenue = db.session.query(func.sum(Order.amount)).filter(
+        *( [Order.transaction_date >= start_date, Order.transaction_date <= end_date] if start_date else [] )
+    ).scalar() or 0.0
+
+    avg_order_value = round(total_revenue / total_orders, 2) if total_orders > 0 else 0.0
+
+    paid_orders = order_query.filter(Order.payment_status.in_(['Paid', 'Success'])).count()
+    unpaid_orders = total_orders - paid_orders
+
+    total_farmers = User.query.filter_by(user_type='farmer').count()
+    total_consumers = User.query.filter_by(user_type='consumer').count()
+
+    confirmation_rate_pct = round((completed_orders / total_orders * 100), 1) if total_orders > 0 else 0.0
+    cancellation_rate_pct = round((cancelled_orders / total_orders * 100), 1) if total_orders > 0 else 0.0
+
+    consumer_orders = db.session.query(Order.user_id, func.count(Order.id).label('cnt')).group_by(Order.user_id).all()
+    repeat_buyers = sum(1 for c in consumer_orders if c.cnt > 1)
+    total_buyers = len(consumer_orders)
+    repeat_customer_rate_pct = round((repeat_buyers / total_buyers * 100), 1) if total_buyers > 0 else 0.0
+
+    total_txns = Transaction.query.count()
+    success_txns = Transaction.query.filter_by(status='Success').count()
+    payment_success_rate_pct = round((success_txns / total_txns * 100), 1) if total_txns > 0 else (100.0 if total_orders > 0 else 0.0)
+
+    metrics = {
+        'total_revenue': round(total_revenue, 2),
+        'total_orders': total_orders,
+        'avg_order_value': avg_order_value,
+        'pending_orders': pending_orders,
+        'confirmed_orders': confirmed_orders,
+        'delivered_orders': delivered_orders,
+        'completed_orders': completed_orders,
+        'cancelled_orders': cancelled_orders,
+        'paid_orders': paid_orders,
+        'unpaid_orders': unpaid_orders,
+        'total_farmers': total_farmers,
+        'total_consumers': total_consumers,
+        'active_farmers': total_farmers,
+        'active_consumers': total_consumers,
+        'confirmation_rate_pct': confirmation_rate_pct,
+        'cancellation_rate_pct': cancellation_rate_pct,
+        'repeat_customer_rate_pct': repeat_customer_rate_pct,
+        'payment_success_rate_pct': payment_success_rate_pct,
+        'fulfillment_rate': confirmation_rate_pct,
+        'orders_growth_pct': 0.0,
+        'revenue_growth_pct': 0.0
+    }
 
     response = {
         'status': 'success',
-        'summary': {
-            'total_revenue': round(total_revenue, 2),
-            'total_orders': total_orders,
-            'completed_orders': completed_orders,
-            'active_farmers': active_farmers,
-            'active_consumers': active_consumers,
-            'fulfillment_rate': round((completed_orders / total_orders * 100), 1) if total_orders > 0 else 0.0
-        }
+        **metrics,
+        'summary': metrics
     }
     set_cached(cache_key, response)
     return jsonify(response), 200

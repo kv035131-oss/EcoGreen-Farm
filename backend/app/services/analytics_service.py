@@ -22,7 +22,7 @@ from backend.app.extensions import db
 
 # In-memory cache
 _analytics_cache = {}
-CACHE_TTL = 300  # 5 minutes
+CACHE_TTL = 5  # 5 seconds for real-time updates
 
 def get_cached(key):
     if key in _analytics_cache:

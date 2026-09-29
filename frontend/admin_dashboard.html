@@ -1351,15 +1351,16 @@
         }
 
         // Render Summary KPI Cards
-        function renderSummary(d) {
+        function renderSummary(dataObj) {
+            const d = dataObj.summary || dataObj;
             document.getElementById('kpi-total-orders').innerText = d.total_orders || 0;
             document.getElementById('kpi-total-revenue').innerText = formatRupee(d.total_revenue);
             document.getElementById('kpi-aov').innerText = formatRupee(d.avg_order_value);
             document.getElementById('kpi-pending-orders').innerText = d.pending_orders || 0;
             document.getElementById('kpi-confirmed-orders').innerText = d.confirmed_orders || 0;
             document.getElementById('kpi-delivered-orders').innerText = d.delivered_orders || 0;
-            document.getElementById('kpi-farmers').innerText = d.total_farmers || 0;
-            document.getElementById('kpi-consumers').innerText = d.total_consumers || 0;
+            document.getElementById('kpi-farmers').innerText = d.total_farmers || d.active_farmers || 0;
+            document.getElementById('kpi-consumers').innerText = d.total_consumers || d.active_consumers || 0;
             document.getElementById('kpi-conf-rate').innerText = (d.confirmation_rate_pct || 0) + '%';
             document.getElementById('kpi-canc-rate').innerText = (d.cancellation_rate_pct || 0) + '%';
             document.getElementById('kpi-repeat-rate').innerText = (d.repeat_customer_rate_pct || 0) + '%';
