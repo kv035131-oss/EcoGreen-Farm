@@ -63,6 +63,7 @@ def pay_order():
                 amount=order.amount,
                 status='Success'
             )
+            order.payment_status = 'Paid'
             db.session.add(txn)
             db.session.commit()
             trigger_order_notifications(order, 'payment_success')
@@ -131,6 +132,7 @@ def verify_payment():
 
             order = Order.query.get(txn.order_id)
             if order:
+                order.payment_status = 'Paid'
                 trigger_order_notifications(order, 'payment_success')
 
             db.session.commit()

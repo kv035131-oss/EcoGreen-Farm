@@ -73,6 +73,7 @@ def create_order():
             user_id=user_id,
             amount=amount,
             order_status=status,
+            payment_status='Unpaid',
             phone_number=phone_number
         )
         db.session.add(order)
