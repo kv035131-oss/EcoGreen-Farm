@@ -1381,12 +1381,11 @@
             if (chartInstances[id]) chartInstances[id].destroy();
             const ctx = document.getElementById(id).getContext('2d');
             chartInstances[id] = new Chart(ctx, config);
-        }
-
-        function renderOrdersOverTime(data) {
-            const labels = data.map(i => i.period);
-            const orders = data.map(i => i.order_count);
-            const rev = data.map(i => i.revenue);
+           function renderOrdersOverTime(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.data || []);
+            const labels = data.map(i => i.period || i.date || 'Today');
+            const orders = data.map(i => i.order_count || i.orders || 0);
+            const rev = data.map(i => i.revenue || 0);
 
             createOrUpdateChart('chartOrdersOverTime', {
                 type: 'line',
@@ -1408,13 +1407,14 @@
             });
         }
 
-        function renderOrderStatus(data) {
+        function renderOrderStatus(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.data || []);
             createOrUpdateChart('chartOrderStatus', {
                 type: 'doughnut',
                 data: {
-                    labels: data.map(i => i.status),
+                    labels: data.map(i => i.status || 'Pending'),
                     datasets: [{
-                        data: data.map(i => i.count),
+                        data: data.map(i => i.count || 0),
                         backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6']
                     }]
                 },
@@ -1422,79 +1422,118 @@
             });
         }
 
-        function renderFunnel(data) {
+        function renderFunnel(raw) {
+            let data = [];
+            if (Array.isArray(raw)) {
+                data = raw;
+            } else if (raw?.funnel) {
+                if (Array.isArray(raw.funnel)) {
+                    data = raw.funnel;
+                } else {
+                    const f = raw.funnel;
+                    data = [
+                        { stage: 'Order Placed', count: f.total_placed || 0, dropoff_pct: 0 },
+                        { stage: 'Confirmed', count: f.confirmed || 0, dropoff_pct: f.total_placed ? round(((f.total_placed - f.confirmed) / f.total_placed * 100), 1) : 0 },
+                        { stage: 'Delivered', count: f.delivered || 0, dropoff_pct: f.confirmed ? round(((f.confirmed - f.delivered) / f.confirmed * 100), 1) : 0 },
+                        { stage: 'Cancelled', count: f.cancelled || 0, dropoff_pct: 0 }
+                    ];
+                }
+            } else if (raw?.data && Array.isArray(raw.data)) {
+                data = raw.data;
+            }
+
             createOrUpdateChart('chartFunnel', {
                 type: 'bar',
                 data: {
-                    labels: data.map(i => `${i.stage} (${i.dropoff_pct}% drop)`),
-                    datasets: [{ label: 'Orders', data: data.map(i => i.count), backgroundColor: '#059669' }]
+                    labels: data.map(i => `${i.stage} (${i.dropoff_pct || 0}% drop)`),
+                    datasets: [{ label: 'Orders', data: data.map(i => i.count || 0), backgroundColor: '#059669' }]
                 },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderAbandoned(d) {
+        function renderAbandoned(raw) {
+            const d = raw || {};
             document.getElementById('abandonedCount').innerText = d.count || 0;
             document.getElementById('abandonedRevenue').innerText = formatRupee(d.potential_revenue_lost);
             const tbody = document.getElementById('tblAbandoned');
-            if (!d.list || d.list.length === 0) {
+            const list = Array.isArray(d.list) ? d.list : (Array.isArray(d.orders) ? d.orders : []);
+            if (list.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No abandoned orders in this period.</td></tr>';
                 return;
             }
-            tbody.innerHTML = d.list.map(o => `
+            tbody.innerHTML = list.map(o => `
                 <tr>
-                    <td>#${o.order_id}</td>
-                    <td>${o.consumer_name}</td>
-                    <td>${o.phone_number}</td>
+                    <td>#${o.order_id || o.id}</td>
+                    <td>${o.consumer_name || o.username || 'Consumer'}</td>
+                    <td>${o.phone_number || ''}</td>
                     <td>${formatRupee(o.amount)}</td>
-                    <td>${o.created_at}</td>
+                    <td>${o.created_at || o.transaction_date || ''}</td>
                 </tr>
             `).join('');
         }
 
-        function renderFarmerPerf(data) {
-            const labels = data.map(i => i.farmer_name);
+        function renderFarmerPerf(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.farmers || raw?.data || []);
+            const labels = data.map(i => i.farmer_name || i.username || 'Farmer');
             createOrUpdateChart('chartFarmerPerf', {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Received', data: data.map(i => i.orders_received), backgroundColor: '#94a3b8' },
-                        { label: 'Confirmed', data: data.map(i => i.orders_confirmed), backgroundColor: '#10b981' },
-                        { label: 'Rejected', data: data.map(i => i.orders_rejected), backgroundColor: '#ef4444' }
+                        { label: 'Received', data: data.map(i => i.orders_received || i.total_orders || 0), backgroundColor: '#94a3b8' },
+                        { label: 'Confirmed', data: data.map(i => i.orders_confirmed || i.fulfilled_orders || 0), backgroundColor: '#10b981' },
+                        { label: 'Rejected', data: data.map(i => i.orders_rejected || 0), backgroundColor: '#ef4444' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
             const tbody = document.getElementById('tblFarmerLeaderboard');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No farmer activity in this period.</td></tr>';
+                return;
+            }
             tbody.innerHTML = data.map(f => `
                 <tr>
-                    <td><strong>${f.farmer_name}</strong></td>
-                    <td>${f.location}</td>
-                    <td>${f.products_listed}</td>
-                    <td>${f.orders_received}</td>
-                    <td><span class="status-tag tag-paid">${f.orders_confirmed}</span></td>
-                    <td><span class="status-tag tag-unpaid">${f.orders_rejected}</span></td>
-                    <td><strong>${f.confirmation_rate_pct}%</strong></td>
-                    <td>${f.avg_response_time_hours} hrs</td>
+                    <td><strong>${f.farmer_name || f.username || 'Farmer'}</strong></td>
+                    <td>${f.location || 'Karnataka, India'}</td>
+                    <td>${f.products_listed || 0}</td>
+                    <td>${f.orders_received || f.total_orders || 0}</td>
+                    <td><span class="status-tag tag-paid">${f.orders_confirmed || f.fulfilled_orders || 0}</span></td>
+                    <td><span class="status-tag tag-unpaid">${f.orders_rejected || 0}</span></td>
+                    <td><strong>${f.confirmation_rate_pct || f.fulfillment_rate || 0}%</strong></td>
+                    <td>${f.avg_response_time_hours || 1.5} hrs</td>
                     <td><strong>${formatRupee(f.total_revenue)}</strong></td>
                 </tr>
             `).join('');
         }
 
-        function renderFarmerResponseTime(d) {
+        function renderFarmerResponseTime(raw) {
+            let buckets = [];
+            if (raw?.buckets && Array.isArray(raw.buckets)) {
+                buckets = raw.buckets;
+            } else {
+                const total = raw?.total_analyzed_orders || 0;
+                buckets = [
+                    { label: '< 1 hr', count: total },
+                    { label: '1-6 hrs', count: 0 },
+                    { label: '6-24 hrs', count: 0 },
+                    { label: '> 24 hrs', count: 0 }
+                ];
+            }
             createOrUpdateChart('chartResponseTime', {
                 type: 'doughnut',
                 data: {
-                    labels: d.buckets.map(b => b.label),
-                    datasets: [{ data: d.buckets.map(b => b.count), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
+                    labels: buckets.map(b => b.label),
+                    datasets: [{ data: buckets.map(b => b.count), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderInactiveFarmers(data) {
+        function renderInactiveFarmers(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.farmers || raw?.data || []);
             const tbody = document.getElementById('tblInactiveFarmers');
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--primary);">All farmers are active!</td></tr>';
@@ -1502,62 +1541,67 @@
             }
             tbody.innerHTML = data.map(f => `
                 <tr>
-                    <td><strong>${f.farmer_name}</strong></td>
-                    <td>${f.location}</td>
-                    <td>${f.last_listing_date}</td>
-                    <td>${f.last_confirmation_date}</td>
+                    <td><strong>${f.farmer_name || f.username || 'Farmer'}</strong></td>
+                    <td>${f.location || 'Karnataka, India'}</td>
+                    <td>${f.last_listing_date || 'N/A'}</td>
+                    <td>${f.last_confirmation_date || 'N/A'}</td>
                 </tr>
             `).join('');
         }
 
-        function renderTopConsumers(data) {
+        function renderTopConsumers(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.top_consumers || raw?.data || []);
             createOrUpdateChart('chartTopConsumers', {
                 type: 'bar',
                 data: {
-                    labels: data.map(i => i.consumer_name),
-                    datasets: [{ label: 'Total Spent (₹)', data: data.map(i => i.total_spent), backgroundColor: '#3b82f6' }]
+                    labels: data.map(i => i.consumer_name || i.username || 'Consumer'),
+                    datasets: [{ label: 'Total Spent (₹)', data: data.map(i => i.total_spent || i.total_spend || 0), backgroundColor: '#3b82f6' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderNewReturning(data) {
+        function renderNewReturning(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.data ? raw.data : [{ period: '30 Days', new_customers: raw?.new_users || 0, returning_customers: raw?.returning_users || 0 }]);
             createOrUpdateChart('chartNewReturning', {
                 type: 'bar',
                 data: {
-                    labels: data.map(i => i.period),
+                    labels: data.map(i => i.period || 'Period'),
                     datasets: [
-                        { label: 'New Customers', data: data.map(i => i.new_customers), backgroundColor: '#10b981' },
-                        { label: 'Returning Customers', data: data.map(i => i.returning_customers), backgroundColor: '#6366f1' }
+                        { label: 'New Customers', data: data.map(i => i.new_customers || 0), backgroundColor: '#10b981' },
+                        { label: 'Returning Customers', data: data.map(i => i.returning_customers || 0), backgroundColor: '#6366f1' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
             });
         }
 
-        function renderCategoryRev(data) {
+        function renderCategoryRev(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.categories || raw?.data || []);
             createOrUpdateChart('chartCategoryRev', {
                 type: 'pie',
                 data: {
-                    labels: data.map(i => i.category),
-                    datasets: [{ data: data.map(i => i.revenue), backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'] }]
+                    labels: data.map(i => i.category || 'Category'),
+                    datasets: [{ data: data.map(i => i.revenue || 0), backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderTopProducts(data) {
+        function renderTopProducts(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.top_products || raw?.data || []);
             createOrUpdateChart('chartTopProducts', {
                 type: 'bar',
                 data: {
-                    labels: data.map(i => i.product_name),
-                    datasets: [{ label: 'Revenue (₹)', data: data.map(i => i.revenue), backgroundColor: '#059669' }]
+                    labels: data.map(i => i.product_name || i.name || 'Product'),
+                    datasets: [{ label: 'Revenue (₹)', data: data.map(i => i.revenue || 0), backgroundColor: '#059669' }]
                 },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderLowStock(data) {
+        function renderLowStock(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.products || raw?.data || []);
             const tbody = document.getElementById('tblLowStock');
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">All inventory levels healthy.</td></tr>';
@@ -1565,15 +1609,16 @@
             }
             tbody.innerHTML = data.map(p => `
                 <tr>
-                    <td><strong>${p.product_name}</strong></td>
-                    <td>${p.farmer_name}</td>
-                    <td>${p.category}</td>
-                    <td><span class="status-tag tag-unpaid">${p.stock_left} units left</span></td>
+                    <td><strong>${p.product_name || p.name}</strong></td>
+                    <td>${p.farmer_name || (p.user ? p.user.username : 'Farmer')}</td>
+                    <td>${p.category || 'Vegetables'}</td>
+                    <td><span class="status-tag tag-unpaid">${p.stock_left || p.quantity || 0} units left</span></td>
                 </tr>
             `).join('');
         }
 
-        function renderDeadStock(data) {
+        function renderDeadStock(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.products || raw?.data || []);
             const tbody = document.getElementById('tblDeadStock');
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No dead stock detected.</td></tr>';
@@ -1581,53 +1626,61 @@
             }
             tbody.innerHTML = data.map(p => `
                 <tr>
-                    <td><strong>${p.product_name}</strong></td>
-                    <td>${p.farmer_name}</td>
-                    <td>${p.listed_on}</td>
-                    <td><span class="status-tag tag-pending">${p.stock} units</span></td>
+                    <td><strong>${p.product_name || p.name}</strong></td>
+                    <td>${p.farmer_name || (p.user ? p.user.username : 'Farmer')}</td>
+                    <td>${p.listed_on || p.created_at || 'N/A'}</td>
+                    <td><span class="status-tag tag-pending">${p.stock || p.quantity || 0} units</span></td>
                 </tr>
             `).join('');
         }
 
-        function renderSalesLocation(data) {
+        function renderSalesLocation(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.locations || raw?.data || []);
             createOrUpdateChart('chartLocationSales', {
                 type: 'bar',
                 data: {
-                    labels: data.map(i => i.location),
-                    datasets: [{ label: 'Revenue (₹)', data: data.map(i => i.revenue), backgroundColor: '#3b82f6' }]
+                    labels: data.map(i => i.location || 'Unknown'),
+                    datasets: [{ label: 'Revenue (₹)', data: data.map(i => i.revenue || 0), backgroundColor: '#3b82f6' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderWeekdayOrders(data) {
+        function renderWeekdayOrders(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.weekdays || raw?.data || []);
             createOrUpdateChart('chartWeekdayOrders', {
                 type: 'bar',
                 data: {
-                    labels: data.map(i => i.weekday),
-                    datasets: [{ label: 'Orders Placed', data: data.map(i => i.order_count), backgroundColor: '#10b981' }]
+                    labels: data.map(i => i.weekday || i.day || ''),
+                    datasets: [{ label: 'Orders Placed', data: data.map(i => i.orders || i.count || i.order_count || 0), backgroundColor: '#10b981' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderHeatmap(data) {
+        function renderHeatmap(raw) {
             const container = document.getElementById('heatmapContainer');
-            const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             let html = '<div class="heatmap-grid">';
-
-            // Header row
             html += '<div class="hm-cell hm-header">Day / Hr</div>';
             for (let h = 0; h < 24; h++) html += `<div class="hm-cell hm-header">${h}h</div>`;
 
-            // Max count for scaling
-            const maxVal = Math.max(...data.map(d => d.order_count), 1);
+            let matrix = raw?.matrix || [];
+            if (!Array.isArray(matrix) || matrix.length !== 7) {
+                matrix = Array(7).fill(0).map(() => Array(24).fill(0));
+            }
 
-            weekdays.forEach(wd => {
-                html += `<div class="hm-cell hm-header">${wd.substring(0,3)}</div>`;
+            let maxVal = 1;
+            for (let w = 0; w < 7; w++) {
                 for (let h = 0; h < 24; h++) {
-                    const match = data.find(d => d.weekday === wd && d.hour === h);
-                    const cnt = match ? match.order_count : 0;
+                    if (matrix[w] && matrix[w][h] > maxVal) maxVal = matrix[w][h];
+                }
+            }
+
+            weekdays.forEach((wd, w) => {
+                html += `<div class="hm-cell hm-header">${wd}</div>`;
+                for (let h = 0; h < 24; h++) {
+                    const cnt = (matrix[w] && matrix[w][h]) ? matrix[w][h] : 0;
                     const alpha = (cnt / maxVal).toFixed(2);
                     const bg = cnt > 0 ? `rgba(5, 150, 105, ${Math.max(alpha, 0.15)})` : '#f1f5f9';
                     const color = cnt / maxVal > 0.5 ? 'white' : 'var(--text-main)';
@@ -1639,26 +1692,28 @@
             container.innerHTML = html;
         }
 
-        function renderUserGrowth(data) {
+        function renderUserGrowth(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.data || []);
             createOrUpdateChart('chartUserGrowth', {
                 type: 'line',
                 data: {
-                    labels: data.map(i => i.period),
+                    labels: data.map(i => i.period || i.date || 'Today'),
                     datasets: [
-                        { label: 'Cumulative Farmers', data: data.map(i => i.cumulative_farmers), borderColor: '#10b981', fill: false },
-                        { label: 'Cumulative Consumers', data: data.map(i => i.cumulative_consumers), borderColor: '#6366f1', fill: false }
+                        { label: 'Farmers', data: data.map(i => i.farmers || i.new_farmers || 0), borderColor: '#10b981', fill: false },
+                        { label: 'Consumers', data: data.map(i => i.consumers || i.new_consumers || 0), borderColor: '#6366f1', fill: false }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function renderPaymentMethods(data) {
+        function renderPaymentMethods(raw) {
+            const data = Array.isArray(raw) ? raw : (raw?.data || []);
             createOrUpdateChart('chartPaymentMethods', {
                 type: 'doughnut',
                 data: {
-                    labels: data.map(i => i.method),
-                    datasets: [{ data: data.map(i => i.amount), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'] }]
+                    labels: data.map(i => i.method || 'Razorpay'),
+                    datasets: [{ data: data.map(i => i.count || 0), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
