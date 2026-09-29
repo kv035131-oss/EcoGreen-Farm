@@ -47,7 +47,8 @@ def patch_database_schema(app):
                 'ALTER TABLE "order" ADD COLUMN delivered_at DATETIME',
                 'ALTER TABLE "transaction" ADD COLUMN user_id INTEGER',
                 'ALTER TABLE "transaction" ADD COLUMN payment_method VARCHAR(50)',
-                'ALTER TABLE "transaction" ADD COLUMN transaction_date DATETIME'
+                'ALTER TABLE "transaction" ADD COLUMN transaction_date DATETIME',
+                "ALTER TABLE \"transaction\" ADD COLUMN currency VARCHAR(10) DEFAULT 'INR'"
             ]
             for stmt in statements:
                 try:
