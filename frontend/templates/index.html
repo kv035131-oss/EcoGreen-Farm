@@ -863,7 +863,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Total Amount</label>
-                        <div id="orderTotalDisplay" style="padding: 0.75rem 1rem; background: #ecfdf5; border: 1.5px solid var(--primary); border-radius: 10px; font-weight: 800; color: var(--primary); font-size: 1.1rem; text-align: center;">$0.00</div>
+                        <div id="orderTotalDisplay" style="padding: 0.75rem 1rem; background: #ecfdf5; border: 1.5px solid var(--primary); border-radius: 10px; font-weight: 800; color: var(--primary); font-size: 1.1rem; text-align: center;">₹0.00</div>
                     </div>
                 </div>
 
@@ -904,7 +904,7 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label class="form-label">Price ($ / KSh)</label>
+                        <label class="form-label">Price (₹ INR)</label>
                         <input type="number" step="0.01" id="prodPrice" class="form-input" placeholder="15.00" required>
                     </div>
                     <div class="form-group">
@@ -1091,7 +1091,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem; text-align: center;">
                     <div style="font-size: 0.8rem; color: #166534; font-weight: 600;">Total Revenue</div>
-                    <div id="kpiRevenue" style="font-size: 1.6rem; font-weight: 800; color: #15803d; margin-top: 0.25rem;">$0.00</div>
+                    <div id="kpiRevenue" style="font-size: 1.6rem; font-weight: 800; color: #15803d; margin-top: 0.25rem;">₹0.00</div>
                 </div>
                 <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1rem; text-align: center;">
                     <div style="font-size: 0.8rem; color: #1e40af; font-weight: 600;">Total Orders</div>
@@ -1222,7 +1222,7 @@
 
                 if (summaryRes.ok) {
                     const s = await summaryRes.json();
-                    document.getElementById('kpiRevenue').textContent = '$' + parseFloat(s.total_revenue || 0).toFixed(2);
+                    document.getElementById('kpiRevenue').textContent = '₹' + parseFloat(s.total_revenue || 0).toFixed(2);
                     document.getElementById('kpiOrders').textContent = s.total_orders || 0;
                     document.getElementById('kpiPaymentStatus').textContent = `${s.paid_orders || 0} Paid / ${s.unpaid_orders || 0} Unpaid`;
                     document.getElementById('kpiUsers').textContent = `${s.total_farmers || 0} Farmers / ${s.total_consumers || 0} Buyers`;
@@ -1234,7 +1234,7 @@
                         document.getElementById('topFarmersList').innerHTML = farmers.map(f => `
                             <div style="display:flex; justify-content:space-between; padding: 0.4rem 0; border-bottom: 1px solid #e2e8f0;">
                                 <span><strong>${escapeHtml(f.farmer_name)}</strong> (${f.total_orders} orders)</span>
-                                <span style="font-weight:700; color:var(--primary);">$${parseFloat(f.total_revenue).toFixed(2)}</span>
+                                <span style="font-weight:700; color:var(--primary);">₹${parseFloat(f.total_revenue).toFixed(2)}</span>
                             </div>
                         `).join('');
                     } else {
@@ -1248,7 +1248,7 @@
                         document.getElementById('categoryBreakdownList').innerHTML = categories.map(c => `
                             <div style="display:flex; justify-content:space-between; padding: 0.4rem 0; border-bottom: 1px solid #e2e8f0;">
                                 <span><strong>${escapeHtml(c.category)}</strong></span>
-                                <span style="font-weight:700; color:#4f46e5;">$${parseFloat(c.revenue).toFixed(2)} (${c.order_count} orders)</span>
+                                <span style="font-weight:700; color:#4f46e5;">₹${parseFloat(c.revenue).toFixed(2)} (${c.order_count} orders)</span>
                             </div>
                         `).join('');
                     } else {
@@ -1355,7 +1355,7 @@
                         <h3 class="product-title">${escapeHtml(p.name)}</h3>
                         <p class="product-desc">${escapeHtml(p.description || 'Fresh farm product direct from verified farmer.')}</p>
                         <div class="product-meta">
-                            <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+                            <div class="product-price">₹${parseFloat(p.price).toFixed(2)}</div>
                             <div class="product-rating">
                                 <i class="fa-solid fa-star"></i> ${p.avg_rating ? p.avg_rating : '5.0'}
                             </div>
@@ -1433,7 +1433,7 @@
             document.getElementById('orderUnitPrice').value = product.price;
             document.getElementById('orderProductImg').src = product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500';
             document.getElementById('orderProductTitle').textContent = product.name;
-            document.getElementById('orderProductPrice').textContent = '$' + parseFloat(product.price).toFixed(2);
+            document.getElementById('orderProductPrice').textContent = '₹' + parseFloat(product.price).toFixed(2);
             document.getElementById('orderProductStock').textContent = `${product.quantity} in stock`;
             document.getElementById('orderProductLocation').textContent = '📍 Farm: ' + (product.location || 'Local Farm');
             document.getElementById('orderQuantity').value = 1;
@@ -1453,7 +1453,7 @@
             const unitPrice = parseFloat(document.getElementById('orderUnitPrice').value) || 0;
             const qty = parseInt(document.getElementById('orderQuantity').value) || 1;
             const total = (unitPrice * qty).toFixed(2);
-            document.getElementById('orderTotalDisplay').textContent = '$' + total;
+            document.getElementById('orderTotalDisplay').textContent = '₹' + total;
         }
 
         // Submit Order & Trigger Razorpay Payment
@@ -1700,7 +1700,7 @@
                                     <div>${escapeHtml(o.user_name || 'Customer')}</div>
                                     <div style="font-size:0.75rem; color: var(--text-muted);">${escapeHtml(o.phone_number || '')}</div>
                                 </td>
-                                <td style="font-weight:700; color: var(--primary);">$${parseFloat(o.amount || 0).toFixed(2)}</td>
+                                <td style="font-weight:700; color: var(--primary);">₹${parseFloat(o.amount || 0).toFixed(2)}</td>
                                 <td>
                                     <div>${statusBadgeHtml}</div>
                                     <div style="margin-top:0.25rem;">${payBadgeHtml}</div>
