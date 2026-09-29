@@ -1046,8 +1046,7 @@
 
 
 
-    <!-- Scripts -->
-    <script>
+    <!-- Scripts --    <script>
         // ROUTE GUARD & TOKEN RETRIEVAL
         let token = localStorage.getItem('farmer_app_jwt') || localStorage.getItem('access-token') || localStorage.getItem('token');
         let user = JSON.parse(localStorage.getItem('farmer_app_user') || localStorage.getItem('user') || '{}');
@@ -1057,7 +1056,8 @@
             user = { username: 'admin', user_type: 'admin' };
         }
 
-        document.getElementById('adminUsername').innerText = user.username || 'Admin';
+        const adminUserEl = document.getElementById('adminUsername');
+        if (adminUserEl) adminUserEl.innerText = user.username || 'Admin';
 
         function logoutAdmin() {
             localStorage.removeItem('farmer_app_jwt');
@@ -1078,13 +1078,16 @@
             return '₹' + num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
         }
 
-        // Check URL route for direct tab navigation (e.g. /admin/notifications)
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.location.pathname.includes('/notifications')) {
-                const tabBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes('whatsapp-notifs'));
-                if (tabBtn) switchTab('whatsapp-notifs', tabBtn);
-            }
-        });
+        // Helper: HTML escaping
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
         async function fetchNotificationStats() {
             try {
@@ -1093,11 +1096,16 @@
                 const json = await res.json();
                 if (json.status === 'success') {
                     const s = json.stats;
-                    document.getElementById('kpi-notif-total').innerText = s.total || 0;
-                    document.getElementById('kpi-notif-sent').innerText = s.sent || 0;
-                    document.getElementById('kpi-notif-simulated').innerText = s.simulated || 0;
-                    document.getElementById('kpi-notif-received').innerText = s.received || 0;
-                    document.getElementById('kpi-notif-rate').innerText = s.success_rate + '%';
+                    const totEl = document.getElementById('kpi-notif-total');
+                    const sentEl = document.getElementById('kpi-notif-sent');
+                    const simEl = document.getElementById('kpi-notif-simulated');
+                    const recEl = document.getElementById('kpi-notif-received');
+                    const rateEl = document.getElementById('kpi-notif-rate');
+                    if (totEl) totEl.innerText = s.total || 0;
+                    if (sentEl) sentEl.innerText = s.sent || 0;
+                    if (simEl) simEl.innerText = s.simulated || 0;
+                    if (recEl) recEl.innerText = s.received || 0;
+                    if (rateEl) rateEl.innerText = (s.success_rate || 0) + '%';
 
                     renderNotifDailyChart(json.daily_chart || []);
                 }
@@ -1134,8 +1142,10 @@
         async function fetchNotificationLogs() {
             try {
                 const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-                const status = document.getElementById('notifStatusFilter').value;
-                const event_type = document.getElementById('notifEventFilter').value;
+                const statusEl = document.getElementById('notifStatusFilter');
+                const eventEl = document.getElementById('notifEventFilter');
+                const status = statusEl ? statusEl.value : '';
+                const event_type = eventEl ? eventEl.value : '';
 
                 let url = '/api/v1/admin/notifications/logs?page=1&per_page=100';
                 if (status) url += `&status=${status}`;
@@ -1144,8 +1154,9 @@
                 const res = await fetch(url, { headers });
                 const json = await res.json();
                 const tbody = document.getElementById('notifLogsTableBody');
+                if (!tbody) return;
 
-                if (json.status === 'success' && json.data.length > 0) {
+                if (json.status === 'success' && json.data && json.data.length > 0) {
                     tbody.innerHTML = json.data.map(l => `
                         <tr>
                             <td>#${l.id}</td>
@@ -1159,7 +1170,7 @@
                                     l.status === 'simulated' ? 'background:#e0f2fe; color:#0369a1;' :
                                     l.status === 'received' ? 'background:#f3e8ff; color:#6b21a8;' :
                                     'background:#fee2e2; color:#b91c1c;'
-                                }">${l.status.toUpperCase()}</span>
+                                }">${l.status ? l.status.toUpperCase() : 'UNKNOWN'}</span>
                             </td>
                             <td style="font-size: 0.78rem; font-family: monospace;">${escapeHtml(l.provider_message_id || l.error || '-')}</td>
                             <td style="font-size: 0.8rem; color: var(--text-muted);">${l.created_at || '-'}</td>
@@ -1205,22 +1216,28 @@
                 }
             });
         }
+
+        function selectRange(range, el) {
             currentRange = range;
             document.querySelectorAll('.controls-bar .pill-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('customDateContainer').style.display = 'none';
+            if (el) el.classList.add('active');
+            const customDateContainer = document.getElementById('customDateContainer');
+            if (customDateContainer) customDateContainer.style.display = 'none';
             fetchDashboardData();
         }
 
         function toggleCustomDates(el) {
             document.querySelectorAll('.controls-bar .pill-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('customDateContainer').style.display = 'inline-flex';
+            if (el) el.classList.add('active');
+            const customDateContainer = document.getElementById('customDateContainer');
+            if (customDateContainer) customDateContainer.style.display = 'inline-flex';
         }
 
         function applyCustomDates() {
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
+            const fromEl = document.getElementById('fromDate');
+            const toEl = document.getElementById('toDate');
+            const from = fromEl ? fromEl.value : '';
+            const to = toEl ? toEl.value : '';
             if (!from || !to) {
                 alert('Please select both From and To dates.');
                 return;
@@ -1263,10 +1280,13 @@
 
         async function fetchAPI(endpoint) {
             let url = '/api/v1/admin/analytics/' + endpoint;
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
+            const fromEl = document.getElementById('fromDate');
+            const toEl = document.getElementById('toDate');
+            const customContainer = document.getElementById('customDateContainer');
+            const from = fromEl ? fromEl.value : '';
+            const to = toEl ? toEl.value : '';
 
-            if (from && to && document.getElementById('customDateContainer').style.display !== 'none') {
+            if (from && to && customContainer && customContainer.style.display !== 'none') {
                 url += `?from=${from}&to=${to}`;
             } else if (currentRange) {
                 url += `?range=${currentRange}`;
@@ -1275,114 +1295,88 @@
             try {
                 const res = await fetch(url, { headers: getAuthHeader() });
                 if (res.status === 401 || res.status === 403) {
-                    console.warn("Analytics Auth Warning for " + endpoint);
+                    console.warn(`Analytics Auth Warning (HTTP ${res.status}) for ${endpoint}`);
+                    return null;
+                }
+                if (!res.ok) {
+                    console.error(`API Error HTTP ${res.status} for ${endpoint}`);
                     return null;
                 }
                 return await res.json();
             } catch (err) {
-                console.error("API error for " + endpoint, err);
+                console.error("Network error fetching " + endpoint, err);
                 return null;
             }
         }
 
-
         async function fetchDashboardData(isRefresh = false) {
-            document.getElementById('lastUpdated').innerText = 'Updating...';
+            const lastUpdatedEl = document.getElementById('lastUpdated');
+            if (lastUpdatedEl) lastUpdatedEl.innerText = 'Updating...';
 
-            const summary = await fetchAPI('summary');
-            if (summary) renderSummary(summary);
-
-            const ordersTime = await fetchAPI('orders-over-time?interval=day');
-            if (ordersTime) renderOrdersOverTime(ordersTime);
-
-            const statusBreakdown = await fetchAPI('order-status-breakdown');
-            if (statusBreakdown) renderOrderStatus(statusBreakdown);
-
-            const funnel = await fetchAPI('fulfillment-funnel');
-            if (funnel) renderFunnel(funnel);
-
-            const abandoned = await fetchAPI('abandoned-orders');
-            if (abandoned) renderAbandoned(abandoned);
-
-            const farmerPerf = await fetchAPI('farmer-performance?limit=10');
-            if (farmerPerf) renderFarmerPerf(farmerPerf);
-
-            const farmerResp = await fetchAPI('farmer-response-time');
-            if (farmerResp) renderFarmerResponseTime(farmerResp);
-
-            const inactiveFarmers = await fetchAPI('inactive-farmers?days=30');
-            if (inactiveFarmers) renderInactiveFarmers(inactiveFarmers);
-
-            const topConsumers = await fetchAPI('top-consumers?limit=10');
-            if (topConsumers) renderTopConsumers(topConsumers);
-
-            const newReturning = await fetchAPI('new-vs-returning?interval=month');
-            if (newReturning) renderNewReturning(newReturning);
-
-            const catRev = await fetchAPI('category-breakdown');
-            if (catRev) renderCategoryRev(catRev);
-
-            const topProducts = await fetchAPI('top-products?limit=10');
-            if (topProducts) renderTopProducts(topProducts);
-
-            const lowStock = await fetchAPI('low-stock?threshold=10');
-            if (lowStock) renderLowStock(lowStock);
-
-            const deadStock = await fetchAPI('dead-stock?days=30');
-            if (deadStock) renderDeadStock(deadStock);
-
-            const salesLoc = await fetchAPI('sales-by-location');
-            if (salesLoc) renderSalesLocation(salesLoc);
-
-            const weekdayOrders = await fetchAPI('orders-by-weekday');
-            if (weekdayOrders) renderWeekdayOrders(weekdayOrders);
-
-            const heatmap = await fetchAPI('orders-heatmap');
-            if (heatmap) renderHeatmap(heatmap);
-
-            const userGrowth = await fetchAPI('user-growth?interval=month');
-            if (userGrowth) renderUserGrowth(userGrowth);
-
-            const payMethods = await fetchAPI('payment-methods');
-            if (payMethods) renderPaymentMethods(payMethods);
+            try { const data = await fetchAPI('summary'); if (data) renderSummary(data); } catch(e) { console.error("Summary fetch/render error:", e); }
+            try { const data = await fetchAPI('orders-over-time?interval=day'); if (data) renderOrdersOverTime(data); } catch(e) { console.error("Orders over time error:", e); }
+            try { const data = await fetchAPI('order-status-breakdown'); if (data) renderOrderStatus(data); } catch(e) { console.error("Order status breakdown error:", e); }
+            try { const data = await fetchAPI('fulfillment-funnel'); if (data) renderFunnel(data); } catch(e) { console.error("Fulfillment funnel error:", e); }
+            try { const data = await fetchAPI('abandoned-orders'); if (data) renderAbandoned(data); } catch(e) { console.error("Abandoned orders error:", e); }
+            try { const data = await fetchAPI('farmer-performance?limit=10'); if (data) renderFarmerPerf(data); } catch(e) { console.error("Farmer performance error:", e); }
+            try { const data = await fetchAPI('farmer-response-time'); if (data) renderFarmerResponseTime(data); } catch(e) { console.error("Farmer response time error:", e); }
+            try { const data = await fetchAPI('inactive-farmers?days=30'); if (data) renderInactiveFarmers(data); } catch(e) { console.error("Inactive farmers error:", e); }
+            try { const data = await fetchAPI('top-consumers?limit=10'); if (data) renderTopConsumers(data); } catch(e) { console.error("Top consumers error:", e); }
+            try { const data = await fetchAPI('new-vs-returning?interval=month'); if (data) renderNewReturning(data); } catch(e) { console.error("New vs returning error:", e); }
+            try { const data = await fetchAPI('category-breakdown'); if (data) renderCategoryRev(data); } catch(e) { console.error("Category breakdown error:", e); }
+            try { const data = await fetchAPI('top-products?limit=10'); if (data) renderTopProducts(data); } catch(e) { console.error("Top products error:", e); }
+            try { const data = await fetchAPI('low-stock?threshold=10'); if (data) renderLowStock(data); } catch(e) { console.error("Low stock error:", e); }
+            try { const data = await fetchAPI('dead-stock?days=30'); if (data) renderDeadStock(data); } catch(e) { console.error("Dead stock error:", e); }
+            try { const data = await fetchAPI('sales-by-location'); if (data) renderSalesLocation(data); } catch(e) { console.error("Sales location error:", e); }
+            try { const data = await fetchAPI('orders-by-weekday'); if (data) renderWeekdayOrders(data); } catch(e) { console.error("Weekday orders error:", e); }
+            try { const data = await fetchAPI('orders-heatmap'); if (data) renderHeatmap(data); } catch(e) { console.error("Orders heatmap error:", e); }
+            try { const data = await fetchAPI('user-growth?interval=month'); if (data) renderUserGrowth(data); } catch(e) { console.error("User growth error:", e); }
+            try { const data = await fetchAPI('payment-methods'); if (data) renderPaymentMethods(data); } catch(e) { console.error("Payment methods error:", e); }
 
             const now = new Date();
-            document.getElementById('lastUpdated').innerText = 'Updated: ' + now.toLocaleTimeString();
+            if (lastUpdatedEl) lastUpdatedEl.innerText = 'Updated: ' + now.toLocaleTimeString();
         }
 
         // Render Summary KPI Cards
         function renderSummary(dataObj) {
             const d = dataObj.summary || dataObj;
-            document.getElementById('kpi-total-orders').innerText = d.total_orders || 0;
-            document.getElementById('kpi-total-revenue').innerText = formatRupee(d.total_revenue);
-            document.getElementById('kpi-aov').innerText = formatRupee(d.avg_order_value);
-            document.getElementById('kpi-pending-orders').innerText = d.pending_orders || 0;
-            document.getElementById('kpi-confirmed-orders').innerText = d.confirmed_orders || 0;
-            document.getElementById('kpi-delivered-orders').innerText = d.delivered_orders || 0;
-            document.getElementById('kpi-farmers').innerText = d.total_farmers || d.active_farmers || 0;
-            document.getElementById('kpi-consumers').innerText = d.total_consumers || d.active_consumers || 0;
-            document.getElementById('kpi-conf-rate').innerText = (d.confirmation_rate_pct || 0) + '%';
-            document.getElementById('kpi-canc-rate').innerText = (d.cancellation_rate_pct || 0) + '%';
-            document.getElementById('kpi-repeat-rate').innerText = (d.repeat_customer_rate_pct || 0) + '%';
-            document.getElementById('kpi-pay-rate').innerText = (d.payment_success_rate_pct || 0) + '%';
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+
+            setTxt('kpi-total-orders', d.total_orders || 0);
+            setTxt('kpi-total-revenue', formatRupee(d.total_revenue));
+            setTxt('kpi-aov', formatRupee(d.avg_order_value));
+            setTxt('kpi-pending-orders', d.pending_orders || 0);
+            setTxt('kpi-confirmed-orders', d.confirmed_orders || 0);
+            setTxt('kpi-delivered-orders', d.delivered_orders || 0);
+            setTxt('kpi-farmers', d.total_farmers || d.active_farmers || 0);
+            setTxt('kpi-consumers', d.total_consumers || d.active_consumers || 0);
+            setTxt('kpi-conf-rate', (d.confirmation_rate_pct || 0) + '%');
+            setTxt('kpi-canc-rate', (d.cancellation_rate_pct || 0) + '%');
+            setTxt('kpi-repeat-rate', (d.repeat_customer_rate_pct || 0) + '%');
+            setTxt('kpi-pay-rate', (d.payment_success_rate_pct || 0) + '%');
 
             // Growth Badges
             const bOrders = document.getElementById('badge-orders');
-            const og = d.orders_growth_pct || 0;
-            bOrders.className = `kpi-badge ${og >= 0 ? 'badge-up' : 'badge-down'}`;
-            bOrders.innerHTML = `<i class="fa-solid fa-arrow-${og >= 0 ? 'up' : 'down'}"></i> ${og}% vs prev`;
+            if (bOrders) {
+                const og = d.orders_growth_pct || 0;
+                bOrders.className = `kpi-badge ${og >= 0 ? 'badge-up' : 'badge-down'}`;
+                bOrders.innerHTML = `<i class="fa-solid fa-arrow-${og >= 0 ? 'up' : 'down'}"></i> ${og}% vs prev`;
+            }
 
             const bRev = document.getElementById('badge-revenue');
-            const rg = d.revenue_growth_pct || 0;
-            bRev.className = `kpi-badge ${rg >= 0 ? 'badge-up' : 'badge-down'}`;
-            bRev.innerHTML = `<i class="fa-solid fa-arrow-${rg >= 0 ? 'up' : 'down'}"></i> ${rg}% vs prev`;
+            if (bRev) {
+                const rg = d.revenue_growth_pct || 0;
+                bRev.className = `kpi-badge ${rg >= 0 ? 'badge-up' : 'badge-down'}`;
+                bRev.innerHTML = `<i class="fa-solid fa-arrow-${rg >= 0 ? 'up' : 'down'}"></i> ${rg}% vs prev`;
+            }
         }
 
         // Chart helper to create or update
         function createOrUpdateChart(id, config) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
             if (chartInstances[id]) chartInstances[id].destroy();
-            const ctx = document.getElementById(id).getContext('2d');
-            chartInstances[id] = new Chart(ctx, config);
+            chartInstances[id] = new Chart(ctx.getContext('2d'), config);
         }
 
         function renderOrdersOverTime(raw) {
@@ -1458,9 +1452,12 @@
 
         function renderAbandoned(raw) {
             const d = raw || {};
-            document.getElementById('abandonedCount').innerText = d.count || 0;
-            document.getElementById('abandonedRevenue').innerText = formatRupee(d.potential_revenue_lost);
+            const countEl = document.getElementById('abandonedCount');
+            const revEl = document.getElementById('abandonedRevenue');
+            if (countEl) countEl.innerText = d.count || 0;
+            if (revEl) revEl.innerText = formatRupee(d.potential_revenue_lost);
             const tbody = document.getElementById('tblAbandoned');
+            if (!tbody) return;
             const list = Array.isArray(d.list) ? d.list : (Array.isArray(d.orders) ? d.orders : []);
             if (list.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No abandoned orders in this period.</td></tr>';
@@ -1494,6 +1491,7 @@
             });
 
             const tbody = document.getElementById('tblFarmerLeaderboard');
+            if (!tbody) return;
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No farmer activity in this period.</td></tr>';
                 return;
@@ -1539,6 +1537,7 @@
         function renderInactiveFarmers(raw) {
             const data = Array.isArray(raw) ? raw : (raw?.farmers || raw?.data || []);
             const tbody = document.getElementById('tblInactiveFarmers');
+            if (!tbody) return;
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--primary);">All farmers are active!</td></tr>';
                 return;
@@ -1607,6 +1606,7 @@
         function renderLowStock(raw) {
             const data = Array.isArray(raw) ? raw : (raw?.products || raw?.data || []);
             const tbody = document.getElementById('tblLowStock');
+            if (!tbody) return;
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">All inventory levels healthy.</td></tr>';
                 return;
@@ -1624,6 +1624,7 @@
         function renderDeadStock(raw) {
             const data = Array.isArray(raw) ? raw : (raw?.products || raw?.data || []);
             const tbody = document.getElementById('tblDeadStock');
+            if (!tbody) return;
             if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No dead stock detected.</td></tr>';
                 return;
@@ -1664,6 +1665,7 @@
 
         function renderHeatmap(raw) {
             const container = document.getElementById('heatmapContainer');
+            if (!container) return;
             const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             let html = '<div class="heatmap-grid">';
             html += '<div class="hm-cell hm-header">Day / Hr</div>';
@@ -1726,7 +1728,7 @@
         // Export helper
         async function exportAllCSV() {
             const summary = await fetchAPI('summary');
-            if (!summary) return;
+            if (!summary) return alert('Unable to fetch analytics summary for CSV export.');
             const keys = Object.keys(summary);
             const vals = Object.values(summary);
             let csv = keys.join(',') + '\n' + vals.join(',') + '\n';
@@ -1739,8 +1741,8 @@
 
         async function downloadCSV(endpoint) {
             const data = await fetchAPI(endpoint);
-            if (!data) return;
-            let rows = Array.isArray(data) ? data : (data.list || [data]);
+            if (!data) return alert(`Unable to fetch ${endpoint} data for CSV export.`);
+            let rows = Array.isArray(data) ? data : (data.list || data.data || data.farmers || [data]);
             if (rows.length === 0) return alert('No data to export.');
             const headers = Object.keys(rows[0]);
             let csv = headers.join(',') + '\n';
@@ -1765,11 +1767,13 @@
         }
 
         function openPbiModal() {
-            document.getElementById('pbiModal').classList.add('active');
+            const modal = document.getElementById('pbiModal');
+            if (modal) modal.classList.add('active');
         }
 
         function closePbiModal() {
-            document.getElementById('pbiModal').classList.remove('active');
+            const modal = document.getElementById('pbiModal');
+            if (modal) modal.classList.remove('active');
         }
 
         function copyEndpointUrl(path, btn) {
@@ -1791,6 +1795,7 @@
 
         async function testPbiConnection() {
             const btn = document.getElementById('btnTestConn');
+            if (!btn) return;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Testing...';
             try {
                 const res = await fetch('/api/v1/admin/analytics/summary', {
@@ -1798,7 +1803,7 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Connected (${data.total_orders} Orders)`;
+                    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Connected (${data.total_orders || 0} Orders)`;
                     btn.style.background = '#dcfce7';
                     btn.style.color = '#15803d';
                 } else {
@@ -1826,8 +1831,14 @@ in
             alert("Power Query M-Code copied to clipboard! In Power BI, click Advanced Editor and paste this snippet.");
         }
 
-        // Initial Load
-        fetchDashboardData();
+        // Attach listeners and load initial data on DOMReady
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.location.pathname.includes('/notifications')) {
+                const tabBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes('whatsapp-notifs'));
+                if (tabBtn) switchTab('whatsapp-notifs', tabBtn);
+            }
+            fetchDashboardData();
+        });
     </script>
 </body>
 </html>
