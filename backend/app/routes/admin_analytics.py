@@ -14,6 +14,8 @@ from backend.app.models.user import User
 from backend.app.models.product import Product
 from backend.app.models.order import Order
 from backend.app.models.transaction import Transaction
+from backend.app.models.moderation_log import ProductModerationLog
+
 from backend.app.services.analytics_service import (
     admin_required, get_cached, set_cached, get_date_filters, mask_phone
 )
@@ -503,3 +505,143 @@ def get_payment_methods():
     } for r in results]
 
     return jsonify({'status': 'success', 'data': data}), 200
+
+
+# ==========================================
+# CONTENT MODERATION QUEUE ENDPOINTS
+# ==========================================
+
+@analytics_bp.route('/moderation/pending', methods=['GET'])
+@admin_required
+def get_pending_moderation():
+    """
+    GET /api/v1/admin/moderation/pending
+    Returns list of products awaiting admin review or rejected, with farmer info & AI reasons.
+    """
+    status_filter = request.args.get('status')
+    if status_filter:
+        query = Product.query.filter(Product.moderation_status == status_filter)
+    else:
+        query = Product.query.filter(Product.moderation_status.in_(['needs_review', 'pending', 'rejected']))
+
+    products = query.order_by(Product.id.desc()).all()
+    
+    data = []
+    for p in products:
+        farmer = User.query.get(p.user_id) if p.user_id else None
+        item = p.to_dict()
+        item['farmer_name'] = farmer.username if farmer else 'Unknown Farmer'
+        item['farmer_email'] = farmer.email if farmer else 'N/A'
+        item['farmer_flagged'] = farmer.flagged if farmer else False
+        item['farmer_flag_note'] = farmer.flag_note if farmer else None
+        data.append(item)
+
+    return jsonify({
+        'status': 'success',
+        'count': len(data),
+        'data': data
+    }), 200
+
+
+@analytics_bp.route('/moderation/count', methods=['GET'])
+@admin_required
+def get_moderation_count():
+    """
+    GET /api/v1/admin/moderation/count
+    Returns count of products needing admin review.
+    """
+    pending_count = Product.query.filter(Product.moderation_status.in_(['needs_review', 'pending'])).count()
+    rejected_count = Product.query.filter(Product.moderation_status == 'rejected').count()
+    return jsonify({
+        'status': 'success',
+        'pending_count': pending_count,
+        'rejected_count': rejected_count
+    }), 200
+
+
+@analytics_bp.route('/moderation/<int:product_id>/approve', methods=['POST'])
+@admin_required
+def approve_product_moderation(product_id):
+    """
+    POST /api/v1/admin/moderation/<product_id>/approve
+    Admin manual override approval for a product.
+    """
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'error': 'Product not found', 'status': 'error'}), 404
+
+    product.moderation_status = 'approved'
+    product.moderation_reason = 'Approved by Admin override.'
+    product.moderated_at = datetime.utcnow()
+    product.moderated_by = 'admin'
+
+    log_entry = ProductModerationLog(
+        product_id=product.id,
+        decision='approved',
+        reason='Approved by Admin override.',
+        raw_model_output='Admin Override',
+        decided_by='admin',
+        created_at=datetime.utcnow()
+    )
+    db.session.add(log_entry)
+    db.session.commit()
+
+    return jsonify({
+        'status': 'success',
+        'message': f"Product '{product.name}' approved successfully.",
+        'product': product.to_dict()
+    }), 200
+
+
+@analytics_bp.route('/moderation/<int:product_id>/reject', methods=['POST'])
+@admin_required
+def reject_product_moderation(product_id):
+    """
+    POST /api/v1/admin/moderation/<product_id>/reject
+    Admin manual override rejection for a product with custom reason.
+    """
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({'error': 'Product not found', 'status': 'error'}), 404
+
+    req_data = request.json or {}
+    reason = req_data.get('reason', 'Rejected by Admin review').strip()
+
+    product.moderation_status = 'rejected'
+    product.moderation_reason = reason
+    product.moderated_at = datetime.utcnow()
+    product.moderated_by = 'admin'
+
+    log_entry = ProductModerationLog(
+        product_id=product.id,
+        decision='rejected',
+        reason=reason,
+        raw_model_output='Admin Override',
+        decided_by='admin',
+        created_at=datetime.utcnow()
+    )
+    db.session.add(log_entry)
+
+    # Check farmer abuse prevention (3+ rejections in 7 days -> flag account)
+    if product.user_id:
+        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        farmer_rejections = db.session.query(ProductModerationLog).join(Product).filter(
+            Product.user_id == product.user_id,
+            ProductModerationLog.decision == 'rejected',
+            ProductModerationLog.created_at >= seven_days_ago
+        ).count()
+
+        if farmer_rejections >= 3:
+            farmer = User.query.get(product.user_id)
+            if farmer:
+                farmer.flagged = True
+                farmer.flag_note = f"Flagged automatically: {farmer_rejections} rejected product listings within 7 days (Last: '{product.name}')."
+
+    db.session.commit()
+
+    return jsonify({
+        'status': 'success',
+        'message': f"Product '{product.name}' rejected.",
+        'product': product.to_dict()
+    }), 200
+

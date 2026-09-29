@@ -42,6 +42,16 @@ class Config:
     SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '').strip()
     SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '').strip()
 
+    # Content Moderation (Gemini Vision)
+    MODERATION_MODE = os.environ.get('MODERATION_MODE', 'simulate').strip().lower()
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
+    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash').strip()
+
+    if MODERATION_MODE == 'gemini' and not GEMINI_API_KEY:
+        import logging
+        logging.warning("MODERATION_MODE is set to 'gemini' but GEMINI_API_KEY is missing. Falling back to 'simulate' mode.")
+        MODERATION_MODE = 'simulate'
+
 
 class DevelopmentConfig(Config):
     """Development Environment Configuration."""

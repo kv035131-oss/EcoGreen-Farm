@@ -9,6 +9,7 @@ erDiagram
     USER ||--o{ NOTIFICATION_LOG : "audited_in"
     USER ||--o{ REVIEWS : "writes"
     USER ||--o{ SEARCH : "queries"
+    PRODUCT ||--o{ PRODUCT_MODERATION_LOG : "has_logs"
 
     PRODUCT ||--o{ ORDER : "ordered_in"
     PRODUCT ||--o{ REVIEWS : "reviewed_in"
@@ -29,6 +30,8 @@ erDiagram
         boolean whatsapp_opt_in
         datetime last_inbound_whatsapp_at
         string notification_language
+        boolean flagged
+        text flag_note
     }
 
     PRODUCT {
@@ -42,7 +45,22 @@ erDiagram
         int quantity
         string category
         datetime created_at
+        string moderation_status
+        text moderation_reason
+        datetime moderated_at
+        string moderated_by
     }
+
+    PRODUCT_MODERATION_LOG {
+        int id PK
+        int product_id FK
+        string decision
+        text reason
+        text raw_model_output
+        string decided_by
+        datetime created_at
+    }
+
 
     ORDER {
         int id PK

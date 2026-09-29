@@ -134,3 +134,43 @@ pytest
 | Marketplace | Executive BI Dashboard |
 | :---: | :---: |
 | ![Marketplace](docs/screenshots/marketplace.png) | ![Admin Dashboard](docs/screenshots/admin_dashboard.png) |
+
+---
+
+## 🛡️ Content Moderation (Gemini Vision)
+
+EcoGreen includes an automated, AI-driven content moderation engine powered by **Google Gemini Vision API** (`google-generativeai` SDK) to prevent farmers from listing prohibited, inappropriate, or non-farm products (such as electronics, weapons, or illegal items).
+
+### Moderation Modes
+
+1. **`simulate` Mode (Default):**
+   - No API key required. Uses a deterministic rule engine for local testing.
+   - Automatically approves valid farm produce (e.g. "Tomatoes", "Honey", "Carrots").
+   - Automatically rejects test listings containing prohibited keywords (e.g., "laptop", "phone", "weapon", "drug").
+
+2. **`gemini` Mode (Live AI Vision):**
+   - Uses Google's `gemini-2.5-flash` model to analyze the image content in real-time.
+   - Evaluates whether the image matches allowed farm produce categories (**Vegetables**, **Fruits**, **Dairy & Eggs**, **Honey**, **Grains**).
+   - Flags prohibited items (electronics, weapons, drugs, nudity, violence, or non-farm goods).
+   - Returns structured JSON response (`approved`, `rejected`, `needs_review`).
+
+### Setting up a Free Gemini API Key
+
+1. Get a free API key from Google AI Studio: [aistudio.google.com/apikey](https://aistudio.google.com/apikey) *(No credit card required for free tier)*.
+2. Add your key and set `MODERATION_MODE` in `.env`:
+   ```env
+   MODERATION_MODE=gemini
+   GEMINI_API_KEY=your_google_gemini_api_key_here
+   GEMINI_MODEL=gemini-2.5-flash
+   ```
+3. If `GEMINI_API_KEY` is missing or empty, EcoGreen safely logs a warning and falls back to `simulate` mode without crashing.
+
+### Moderation Decisions & Admin Review Queue
+
+- **`approved`**: Listing is verified as real farm produce and published to the public marketplace immediately.
+- **`rejected`**: Listing is hidden from public view. The farmer sees the rejection reason on their dashboard.
+- **`needs_review`**: Ambiguous, low-quality, or service-fallback listings are sent to the **Admin Moderation Queue** (`/admin/moderation`).
+- **Admin Override**: Administrators can review images, inspect AI reasoning, and manually Approve or Reject items from the admin dashboard card grid.
+- **Abuse Prevention**: Farmers with 3+ rejected listings within 7 days are automatically flagged on the Admin Users panel.
+- **Rate Limit**: Farmers are limited to max 20 product creation requests per hour. Note that Gemini free tier has a requests-per-minute limit, so heavy/automated testing should use `simulate` mode.
+

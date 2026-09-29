@@ -31,7 +31,13 @@ def patch_database_schema():
             'ALTER TABLE "transaction" ADD COLUMN user_id INTEGER',
             "ALTER TABLE \"transaction\" ADD COLUMN currency VARCHAR(10) DEFAULT 'INR'",
             'ALTER TABLE "transaction" ADD COLUMN payment_method VARCHAR(50)',
-            'ALTER TABLE "transaction" ADD COLUMN transaction_date DATETIME'
+            'ALTER TABLE "transaction" ADD COLUMN transaction_date DATETIME',
+            "ALTER TABLE product ADD COLUMN moderation_status VARCHAR(50) DEFAULT 'approved'",
+            'ALTER TABLE product ADD COLUMN moderation_reason TEXT',
+            'ALTER TABLE product ADD COLUMN moderated_at DATETIME',
+            'ALTER TABLE product ADD COLUMN moderated_by VARCHAR(100)',
+            'ALTER TABLE user ADD COLUMN flagged BOOLEAN DEFAULT 0',
+            'ALTER TABLE user ADD COLUMN flag_note TEXT'
         ]
 
         for stmt in statements:
@@ -42,6 +48,14 @@ def patch_database_schema():
             except Exception as e:
                 db.session.rollback()
                 print(f"[Schema Patch Note] Column already exists or skipped: {e}")
+
+        # Ensure existing null moderation_status products are set to 'approved'
+        try:
+            db.session.execute(text("UPDATE product SET moderation_status = 'approved' WHERE moderation_status IS NULL OR moderation_status = 'pending'"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
 
 if __name__ == '__main__':
     patch_database_schema()

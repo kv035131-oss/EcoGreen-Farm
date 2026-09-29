@@ -22,6 +22,10 @@ class User(db.Model):
     last_inbound_whatsapp_at = db.Column(db.DateTime, nullable=True)
     notification_language = db.Column(db.String(10), default='en', nullable=False)
 
+    # Abuse prevention & Content Moderation flag
+    flagged = db.Column(db.Boolean, default=False, nullable=False)
+    flag_note = db.Column(db.Text, nullable=True)
+
     @property
     def effective_phone(self):
         return self.phone or self.phone_number
@@ -38,5 +42,8 @@ class User(db.Model):
             'whatsapp_opt_in': self.whatsapp_opt_in or False,
             'last_inbound_whatsapp_at': self.last_inbound_whatsapp_at.strftime("%Y-%m-%d %H:%M:%S") if self.last_inbound_whatsapp_at else None,
             'notification_language': self.notification_language or 'en',
+            'flagged': self.flagged or False,
+            'flag_note': self.flag_note,
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S") if self.created_at else None
         }
+

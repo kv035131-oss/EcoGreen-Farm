@@ -11,6 +11,7 @@ from backend.app.models.transaction import Transaction
 from backend.app.models.notification import Notification, NotificationLog
 from backend.app.models.reviews import Reviews
 from backend.app.models.search import Search
+from backend.app.models.moderation_log import ProductModerationLog
 
 __all__ = [
     'db',
@@ -21,5 +22,7 @@ __all__ = [
     'Notification',
     'NotificationLog',
     'Reviews',
-    'Search'
+    'Search',
+    'ProductModerationLog'
 ]
+

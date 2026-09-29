@@ -24,6 +24,11 @@ def admin_dashboard():
 def admin_notifications():
     return render_template('admin_dashboard.html')
 
+@pages_bp.route('/admin/moderation')
+def admin_moderation():
+    return render_template('admin_dashboard.html')
+
+
 @pages_bp.route('/access_token')
 def token():
     try:

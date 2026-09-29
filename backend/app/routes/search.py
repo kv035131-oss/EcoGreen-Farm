@@ -23,7 +23,10 @@ def search():
         db.session.add(search_record)
         db.session.commit()
         
-        products = Product.query.filter(Product.name.ilike(f'%{keyword}%')).all()
+        products = Product.query.filter(
+            Product.moderation_status == 'approved',
+            Product.name.ilike(f'%{keyword}%')
+        ).all()
         product_list = [p.to_dict() for p in products]
 
         return jsonify({

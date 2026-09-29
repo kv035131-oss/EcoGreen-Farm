@@ -66,8 +66,8 @@ def test_create_and_get_products(client, app_instance):
 def test_search_products(client, app_instance):
     with app_instance.app_context():
         farmer = User.query.filter_by(username='farmer_bob').first()
-        p1 = Product(user_id=farmer.id, name='Shimla Apples', price=120.0, quantity=50, category='Fruits')
-        p2 = Product(user_id=farmer.id, name='Fresh Carrots', price=30.0, quantity=30, category='Vegetables')
+        p1 = Product(user_id=farmer.id, name='Shimla Apples', price=120.0, quantity=50, category='Fruits', moderation_status='approved')
+        p2 = Product(user_id=farmer.id, name='Fresh Carrots', price=30.0, quantity=30, category='Vegetables', moderation_status='approved')
         db.session.add_all([p1, p2])
         db.session.commit()
         farmer_id = farmer.id

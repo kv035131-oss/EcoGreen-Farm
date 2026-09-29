@@ -640,6 +640,7 @@
             <button class="tab-btn" onclick="switchTab('geography', this)"><i class="fa-solid fa-map-location-dot"></i> Geography & Timing</button>
             <button class="tab-btn" onclick="switchTab('growth-pay', this)"><i class="fa-solid fa-credit-card"></i> Growth & Payments</button>
             <button class="tab-btn" onclick="switchTab('whatsapp-notifs', this)"><i class="fa-brands fa-whatsapp"></i> WhatsApp Notifications</button>
+            <button class="tab-btn" onclick="switchTab('moderation', this)"><i class="fa-solid fa-shield-halved"></i> Content Moderation <span id="moderationBadge" style="background:#ef4444; color:white; font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:12px; display:none; margin-left:0.3rem;">0</span></button>
         </div>
     </div>
 
@@ -1041,7 +1042,31 @@
             </div>
         </section>
 
+        <!-- SECTION 9: CONTENT MODERATION QUEUE -->
+        <section id="pane-moderation" class="section-pane">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Produce Content Moderation Queue</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Review AI-flagged or pending produce listings before they appear on the public marketplace.</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="fetchModerationQueue('needs_review')" class="btn-action" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-triangle-exclamation"></i> Needs Review</button>
+                    <button onclick="fetchModerationQueue('rejected')" class="btn-action" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-xmark"></i> Rejected</button>
+                    <button onclick="fetchModerationQueue('')" class="btn-action" style="background: var(--primary-light); color: var(--primary-hover);"><i class="fa-solid fa-list"></i> All Queue</button>
+                </div>
+            </div>
+
+            <div id="moderationQueueGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                <!-- Moderation cards dynamically rendered -->
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+                    <p style="margin-top: 0.5rem; color: var(--text-muted);">Loading moderation queue...</p>
+                </div>
+            </div>
+        </section>
+
     </main>
+
 
 
 
@@ -1263,6 +1288,8 @@
             if (tabId === 'whatsapp-notifs') {
                 fetchNotificationStats();
                 fetchNotificationLogs();
+            } else if (tabId === 'moderation') {
+                fetchModerationQueue();
             }
         }
 
@@ -1332,6 +1359,7 @@
             try { const data = await fetchAPI('orders-heatmap'); if (data) renderHeatmap(data); } catch(e) { console.error("Orders heatmap error:", e); }
             try { const data = await fetchAPI('user-growth?interval=month'); if (data) renderUserGrowth(data); } catch(e) { console.error("User growth error:", e); }
             try { const data = await fetchAPI('payment-methods'); if (data) renderPaymentMethods(data); } catch(e) { console.error("Payment methods error:", e); }
+            try { await fetchModerationCount(); } catch(e) { console.error("Moderation count error:", e); }
 
             const now = new Date();
             if (lastUpdatedEl) lastUpdatedEl.innerText = 'Updated: ' + now.toLocaleTimeString();
@@ -1831,14 +1859,132 @@ in
             alert("Power Query M-Code copied to clipboard! In Power BI, click Advanced Editor and paste this snippet.");
         }
 
+        async function fetchModerationCount() {
+            try {
+                const res = await fetch('/api/v1/admin/analytics/moderation/count', { headers: getAuthHeader() });
+                if (res.ok) {
+                    const data = await res.json();
+                    const badge = document.getElementById('moderationBadge');
+                    if (badge) {
+                        if (data.pending_count > 0) {
+                            badge.innerText = data.pending_count;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Moderation count error:', e);
+            }
+        }
+
+        async function fetchModerationQueue(statusFilter = '') {
+            const grid = document.getElementById('moderationQueueGrid');
+            if (!grid) return;
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem;"><i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i><p style="margin-top: 0.5rem; color: var(--text-muted);">Loading moderation queue...</p></div>';
+
+            try {
+                const url = statusFilter ? `/api/v1/admin/analytics/moderation/pending?status=${statusFilter}` : '/api/v1/admin/analytics/moderation/pending';
+                const res = await fetch(url, { headers: getAuthHeader() });
+                if (!res.ok) throw new Error('Failed to fetch queue');
+                const json = await res.json();
+
+                if (!json.data || json.data.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 12px; border: 1px solid var(--border-color);"><i class="fa-solid fa-circle-check fa-3x" style="color: var(--primary); margin-bottom: 1rem;"></i><h3>Queue Clean!</h3><p style="color: var(--text-muted);">No products currently awaiting moderation review.</p></div>';
+                    return;
+                }
+
+                grid.innerHTML = json.data.map(p => {
+                    const statusClass = p.moderation_status === 'approved' ? 'tag-paid' : (p.moderation_status === 'rejected' ? 'tag-unpaid' : 'tag-pending');
+                    const flaggedBadge = p.farmer_flagged ? `<span style="background:#fee2e2; color:#b91c1c; font-size:0.75rem; padding:0.2rem 0.5rem; border-radius:10px; font-weight:700;"><i class="fa-solid fa-flag"></i> FLAGGED FARMER</span>` : '';
+                    
+                    return `
+                    <div class="kpi-card" style="display: flex; flex-direction: column; gap: 1rem; position: relative;">
+                        <div style="position: relative; width: 100%; height: 200px; border-radius: 8px; overflow: hidden; background: #f1f5f9;">
+                            <img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'">
+                            <span class="status-tag ${statusClass}" style="position: absolute; top: 10px; right: 10px; text-transform: uppercase;">${escapeHtml(p.moderation_status)}</span>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                <h3 style="font-size: 1.1rem; font-weight: 700;">${escapeHtml(p.name)}</h3>
+                                <span style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">₹${p.price}</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;"><i class="fa-solid fa-layer-group"></i> ${escapeHtml(p.category || 'Vegetables')} | <i class="fa-solid fa-boxes-stacked"></i> Stock: ${p.quantity} | <i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.location || 'Farm')}</p>
+                            <p style="font-size: 0.85rem; color: var(--text-main); margin-bottom: 0.75rem;"><i class="fa-solid fa-user-gear"></i> Farmer: <strong>${escapeHtml(p.farmer_name)}</strong> (${escapeHtml(p.farmer_email)}) ${flaggedBadge}</p>
+                            
+                            <div style="background: #f8fafc; border-left: 4px solid #3b82f6; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">
+                                <strong style="color: #1e40af;"><i class="fa-solid fa-robot"></i> AI Moderation Reason:</strong>
+                                <p style="color: var(--text-main); margin-top: 0.25rem;">${escapeHtml(p.moderation_reason || 'Pending AI evaluation.')}</p>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Evaluated: ${p.moderated_at || p.created_at} by ${escapeHtml(p.moderated_by || 'system')}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: auto; padding-top: 0.5rem; border-top: 1px solid var(--border-color);">
+                            <button onclick="approveModeration(${p.id})" class="btn" style="flex: 1; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; padding: 0.5rem; border: none; cursor: pointer;"><i class="fa-solid fa-check"></i> Approve</button>
+                            <button onclick="rejectModerationPrompt(${p.id}, '${escapeHtml(p.name)}')" class="btn" style="flex: 1; background: #ef4444; color: white; border-radius: 8px; font-weight: 600; padding: 0.5rem; border: none; cursor: pointer;"><i class="fa-solid fa-xmark"></i> Reject</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                console.error('Fetch moderation queue error:', e);
+                grid.innerHTML = '<div style="grid-column: 1/-1; color: var(--danger); text-align: center; padding: 2rem;">Error loading moderation queue.</div>';
+            }
+        }
+
+        async function approveModeration(productId) {
+            if (!confirm('Are you sure you want to APPROVE this produce listing for the public marketplace?')) return;
+            try {
+                const res = await fetch(`/api/v1/admin/analytics/moderation/${productId}/approve`, {
+                    method: 'POST',
+                    headers: getAuthHeader()
+                });
+                const json = await res.json();
+                if (res.ok) {
+                    alert(json.message || 'Product approved!');
+                    fetchModerationQueue();
+                    fetchModerationCount();
+                } else {
+                    alert(json.error || 'Failed to approve product.');
+                }
+            } catch (e) {
+                alert('Error approving product: ' + e.message);
+            }
+        }
+
+        async function rejectModerationPrompt(productId, productName) {
+            const reason = prompt(`Reason for rejecting '${productName}':`, 'Image does not match farm produce guidelines.');
+            if (!reason) return;
+            try {
+                const res = await fetch(`/api/v1/admin/analytics/moderation/${productId}/reject`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify({ reason })
+                });
+                const json = await res.json();
+                if (res.ok) {
+                    alert(json.message || 'Product rejected.');
+                    fetchModerationQueue();
+                    fetchModerationCount();
+                } else {
+                    alert(json.error || 'Failed to reject product.');
+                }
+            } catch (e) {
+                alert('Error rejecting product: ' + e.message);
+            }
+        }
+
         // Attach listeners and load initial data on DOMReady
         window.addEventListener('DOMContentLoaded', () => {
             if (window.location.pathname.includes('/notifications')) {
                 const tabBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes('whatsapp-notifs'));
                 if (tabBtn) switchTab('whatsapp-notifs', tabBtn);
+            } else if (window.location.pathname.includes('/moderation')) {
+                const tabBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes('moderation'));
+                if (tabBtn) switchTab('moderation', tabBtn);
             }
             fetchDashboardData();
         });
     </script>
+
 </body>
 </html>
