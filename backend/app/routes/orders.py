@@ -2,9 +2,10 @@
 Order Management Routes Blueprint.
 """
 
+from functools import wraps
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 
 from backend.app.extensions import db
 from backend.app.models.order import Order
@@ -14,10 +15,16 @@ from backend.app.services.order_service import trigger_order_notifications, seri
 
 orders_bp = Blueprint('orders_bp', __name__)
 
+def get_optional_jwt_identity():
+    try:
+        verify_jwt_in_request(optional=True)
+        return get_jwt_identity()
+    except Exception:
+        return None
+
 @orders_bp.route('/api/v1/Orders', methods=['GET'])
-@jwt_required(optional=True)
 def view_all_orders():
-    current_user_id = get_jwt_identity()
+    current_user_id = get_optional_jwt_identity()
     if current_user_id:
         return view_my_orders(int(current_user_id))
 
@@ -49,13 +56,12 @@ def view_my_orders(user_id):
 
 
 @orders_bp.route('/api/v1/Orders/create', methods=['POST'])
-@jwt_required(optional=True)
 def create_order():
     try:
         data = request.json or {}
 
         user_id = int(data.get('user_id', 1))
-        current_user_id = get_jwt_identity()
+        current_user_id = get_optional_jwt_identity()
         if current_user_id:
             user_id = int(current_user_id)
 
@@ -91,7 +97,6 @@ def create_order():
 
 
 @orders_bp.route('/api/v1/Orders/<int:order_id>/status', methods=['PUT', 'POST'])
-@jwt_required(optional=True)
 def update_order_status(order_id):
     try:
         order = Order.query.get(order_id)
@@ -128,7 +133,6 @@ def update_order_status(order_id):
 
 
 @orders_bp.route('/api/v1/Orders/<int:order_id>/deliver', methods=['PUT', 'POST'])
-@jwt_required(optional=True)
 def mark_order_delivered(order_id):
     try:
         order = Order.query.get(order_id)

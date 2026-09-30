@@ -2,9 +2,10 @@
 Product Management Routes Blueprint with Automated Content Moderation.
 """
 
+from functools import wraps
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from sqlalchemy import func
 import cloudinary
 import cloudinary.uploader
@@ -19,12 +20,18 @@ from backend.app.services.moderation_service import moderate_product_image
 
 products_bp = Blueprint('products_bp', __name__)
 
+def get_optional_jwt_identity():
+    try:
+        verify_jwt_in_request(optional=True)
+        return get_jwt_identity()
+    except Exception:
+        return None
+
 @products_bp.route('/api/v1/products/create', methods=['POST'])
-@jwt_required(optional=True)
 def create_product():
     try:
         data = request.form if (request.form and len(request.form) > 0) else (request.json or {})
-        current_user_id = get_jwt_identity()
+        current_user_id = get_optional_jwt_identity()
 
         user_id_raw = data.get('user_id')
         user_id = None
@@ -179,7 +186,6 @@ def create_product():
 
 
 @products_bp.route('/api/v1/products', methods=['GET'])
-@jwt_required(optional=True)
 def view_all_products():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 50))
@@ -201,9 +207,8 @@ def view_all_products():
 
 
 @products_bp.route('/api/v1/farmer/products', methods=['GET'])
-@jwt_required(optional=True)
 def view_farmer_products():
-    current_user_id = get_jwt_identity()
+    current_user_id = get_optional_jwt_identity()
     user_id = request.args.get('user_id') or current_user_id
 
     if not user_id:
@@ -243,7 +248,6 @@ def view_product(id):
 
 
 @products_bp.route('/api/v1/products/<int:id>', methods=['PUT', 'POST'])
-@jwt_required(optional=True)
 def update_product(id):
     product = Product.query.get(id)
     if not product:

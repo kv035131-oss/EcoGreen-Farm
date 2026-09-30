@@ -4,7 +4,7 @@ Initializes Flask app, extensions, blueprints, and background jobs.
 """
 
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from sqlalchemy import text
 
 from backend.app.config import DevelopmentConfig, ProductionConfig, TestingConfig
@@ -87,6 +87,26 @@ def create_app(config_name=None):
     # Initialize Extensions
     db.init_app(app)
     jwt.init_app(app)
+
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return jsonify({
+            'status': 'error',
+            'error': 'Token has expired',
+            'message': 'Token has expired',
+            'msg': 'Token has expired',
+            'expired': True
+        }), 401
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error_string):
+        return jsonify({
+            'status': 'error',
+            'error': 'Invalid authentication token',
+            'message': str(error_string) or 'Invalid authentication token',
+            'msg': str(error_string) or 'Invalid authentication token',
+            'invalid': True
+        }), 401
 
     migrations_dir = os.path.join(base_dir, 'database', 'migrations')
     migrate.init_app(app, db, directory=migrations_dir)
