@@ -25,6 +25,7 @@ def search():
         
         products = Product.query.filter(
             Product.moderation_status == 'approved',
+            Product.is_deleted.is_(False),
             Product.name.ilike(f'%{keyword}%')
         ).all()
         product_list = [p.to_dict() for p in products]

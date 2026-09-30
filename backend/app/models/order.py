@@ -11,6 +11,11 @@ class Order(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     phone_number = db.Column(db.String(50), nullable=False)
+    delivery_address_text = db.Column(db.Text, nullable=True)
+    delivery_latitude = db.Column(db.Float, nullable=True)
+    delivery_longitude = db.Column(db.Float, nullable=True)
+    delivery_district = db.Column(db.String(100), nullable=True)
+    delivery_state = db.Column(db.String(100), nullable=True)
     order_status = db.Column(db.String(50), default='Pending')
     payment_status = db.Column(db.String(50), default='Unpaid')
     transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
@@ -35,6 +40,11 @@ class Order(db.Model):
             'user_id': self.user_id,
             'amount': self.amount,
             'phone_number': self.phone_number,
+            'delivery_address_text': self.delivery_address_text,
+            'delivery_latitude': self.delivery_latitude,
+            'delivery_longitude': self.delivery_longitude,
+            'delivery_district': self.delivery_district,
+            'delivery_state': self.delivery_state,
             'order_status': self.order_status,
             'payment_status': self.payment_status or 'Unpaid',
             'transaction_date': self.transaction_date.strftime("%Y-%m-%d %H:%M:%S") if self.transaction_date else None,

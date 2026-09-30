@@ -10,7 +10,8 @@ class ProductModerationLog(db.Model):
     __tablename__ = 'product_moderation_log'
 
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     decision = db.Column(db.String(50), nullable=False) # approved, rejected, needs_review
     reason = db.Column(db.Text, nullable=True)
     raw_model_output = db.Column(db.Text, nullable=True)
@@ -23,6 +24,7 @@ class ProductModerationLog(db.Model):
         return {
             'id': self.id,
             'product_id': self.product_id,
+            'user_id': self.user_id,
             'decision': self.decision,
             'reason': self.reason,
             'raw_model_output': self.raw_model_output,

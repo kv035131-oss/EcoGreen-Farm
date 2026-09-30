@@ -74,13 +74,28 @@ def create_order():
         phone_number = str(data.get('phone_number', '254700000000'))
         status = data.get('status', 'Pending')
 
+        delivery_address_text = (data.get('delivery_address_text') or data.get('address') or 'Customer Location').strip()
+        delivery_district = (data.get('delivery_district') or data.get('district') or '').strip() or None
+        delivery_state = (data.get('delivery_state') or data.get('state') or '').strip() or None
+
+        try:
+            delivery_latitude = float(data['delivery_latitude']) if data.get('delivery_latitude') is not None else None
+            delivery_longitude = float(data['delivery_longitude']) if data.get('delivery_longitude') is not None else None
+        except (ValueError, TypeError, KeyError):
+            delivery_latitude, delivery_longitude = None, None
+
         order = Order(
             product_id=product_id,
             user_id=user_id,
             amount=amount,
             order_status=status,
             payment_status='Unpaid',
-            phone_number=phone_number
+            phone_number=phone_number,
+            delivery_address_text=delivery_address_text,
+            delivery_latitude=delivery_latitude,
+            delivery_longitude=delivery_longitude,
+            delivery_district=delivery_district,
+            delivery_state=delivery_state
         )
         db.session.add(order)
         db.session.commit()
@@ -89,7 +104,7 @@ def create_order():
             'message': 'Order created successfully',
             'status': 'success',
             'order_id': order.id,
-            'order': serialize_order(order)
+            'order': serialize_order(order, requesting_user_id=user_id)
         }), 201
     except Exception as e:
         db.session.rollback()

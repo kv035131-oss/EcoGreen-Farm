@@ -22,6 +22,7 @@ from backend.app.routes.notifications import notification_bp
 from backend.app.routes.reviews import reviews_bp
 from backend.app.routes.search import search_bp
 from backend.app.routes.admin_analytics import analytics_bp
+from backend.app.routes.geocoding import geocoding_bp
 
 
 CONFIG_MAP = {
@@ -42,13 +43,24 @@ def patch_database_schema(app):
                 'ALTER TABLE user ADD COLUMN last_inbound_whatsapp_at DATETIME',
                 "ALTER TABLE user ADD COLUMN notification_language VARCHAR(10) DEFAULT 'en'",
                 'ALTER TABLE product ADD COLUMN created_at DATETIME',
+                'ALTER TABLE product ADD COLUMN address_text TEXT',
+                'ALTER TABLE product ADD COLUMN latitude FLOAT',
+                'ALTER TABLE product ADD COLUMN longitude FLOAT',
+                'ALTER TABLE product ADD COLUMN district VARCHAR(100)',
+                'ALTER TABLE product ADD COLUMN state VARCHAR(100)',
                 'ALTER TABLE "order" ADD COLUMN confirmed_at DATETIME',
                 'ALTER TABLE "order" ADD COLUMN cancelled_at DATETIME',
                 'ALTER TABLE "order" ADD COLUMN delivered_at DATETIME',
+                'ALTER TABLE "order" ADD COLUMN delivery_address_text TEXT',
+                'ALTER TABLE "order" ADD COLUMN delivery_latitude FLOAT',
+                'ALTER TABLE "order" ADD COLUMN delivery_longitude FLOAT',
+                'ALTER TABLE "order" ADD COLUMN delivery_district VARCHAR(100)',
+                'ALTER TABLE "order" ADD COLUMN delivery_state VARCHAR(100)',
                 'ALTER TABLE "transaction" ADD COLUMN user_id INTEGER',
                 'ALTER TABLE "transaction" ADD COLUMN payment_method VARCHAR(50)',
                 'ALTER TABLE "transaction" ADD COLUMN transaction_date DATETIME',
-                "ALTER TABLE \"transaction\" ADD COLUMN currency VARCHAR(10) DEFAULT 'INR'"
+                "ALTER TABLE \"transaction\" ADD COLUMN currency VARCHAR(10) DEFAULT 'INR'",
+                'ALTER TABLE product_moderation_log ADD COLUMN user_id INTEGER'
             ]
             for stmt in statements:
                 try:
@@ -56,6 +68,13 @@ def patch_database_schema(app):
                     db.session.commit()
                 except Exception:
                     db.session.rollback()
+
+            # Migrate existing legacy location text to address_text
+            try:
+                db.session.execute(text("UPDATE product SET address_text = location WHERE (address_text IS NULL OR address_text = '') AND location IS NOT NULL"))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
         except Exception:
             pass
 
@@ -81,7 +100,20 @@ def create_app(config_name=None):
     if not config_name:
         config_name = os.environ.get('FLASK_ENV', 'development').lower()
     
-    config_cls = CONFIG_MAP.get(config_name, DevelopmentConfig)
+    config_cls = None
+    if config_name:
+        # Support both short aliases ('testing') and full dotted paths ('backend.app.config.TestingConfig')
+        config_cls = CONFIG_MAP.get(config_name.lower())
+        if config_cls is None and '.' in config_name:
+            try:
+                import importlib
+                module_path, class_name = config_name.rsplit('.', 1)
+                module = importlib.import_module(module_path)
+                config_cls = getattr(module, class_name)
+            except Exception:
+                config_cls = None
+    if config_cls is None:
+        config_cls = DevelopmentConfig
     app.config.from_object(config_cls)
 
     # Initialize Extensions
@@ -121,6 +153,7 @@ def create_app(config_name=None):
     app.register_blueprint(reviews_bp)
     app.register_blueprint(search_bp)
     app.register_blueprint(analytics_bp)
+    app.register_blueprint(geocoding_bp)
 
     # Register CLI commands
     register_cli_commands(app)

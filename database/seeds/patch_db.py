@@ -36,8 +36,21 @@ def patch_database_schema():
             'ALTER TABLE product ADD COLUMN moderation_reason TEXT',
             'ALTER TABLE product ADD COLUMN moderated_at DATETIME',
             'ALTER TABLE product ADD COLUMN moderated_by VARCHAR(100)',
+            'ALTER TABLE product ADD COLUMN address_text TEXT',
+            'ALTER TABLE product ADD COLUMN latitude FLOAT',
+            'ALTER TABLE product ADD COLUMN longitude FLOAT',
+            'ALTER TABLE product ADD COLUMN district VARCHAR(100)',
+            'ALTER TABLE product ADD COLUMN state VARCHAR(100)',
+            'ALTER TABLE "order" ADD COLUMN delivery_address_text TEXT',
+            'ALTER TABLE "order" ADD COLUMN delivery_latitude FLOAT',
+            'ALTER TABLE "order" ADD COLUMN delivery_longitude FLOAT',
+            'ALTER TABLE "order" ADD COLUMN delivery_district VARCHAR(100)',
+            'ALTER TABLE "order" ADD COLUMN delivery_state VARCHAR(100)',
             'ALTER TABLE user ADD COLUMN flagged BOOLEAN DEFAULT 0',
-            'ALTER TABLE user ADD COLUMN flag_note TEXT'
+            'ALTER TABLE user ADD COLUMN flag_note TEXT',
+            'ALTER TABLE product_moderation_log ADD COLUMN user_id INTEGER',
+            'ALTER TABLE product ADD COLUMN is_deleted BOOLEAN DEFAULT 0',
+            'ALTER TABLE product ADD COLUMN deleted_at DATETIME'
         ]
 
         for stmt in statements:

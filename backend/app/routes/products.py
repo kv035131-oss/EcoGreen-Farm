@@ -97,27 +97,23 @@ def create_product():
         except (ValueError, TypeError):
             quantity = 1
 
-        location = (data.get('location') or 'Local Farm').strip()
+        address_text = (data.get('address_text') or data.get('location') or 'Local Farm').strip()
+        location = address_text
+        
+        latitude_raw = data.get('latitude')
+        longitude_raw = data.get('longitude')
+        try:
+            latitude = float(latitude_raw) if (latitude_raw is not None and str(latitude_raw).strip() != '') else None
+            longitude = float(longitude_raw) if (longitude_raw is not None and str(longitude_raw).strip() != '') else None
+        except (ValueError, TypeError):
+            latitude, longitude = None, None
+
+        district = (data.get('district') or '').strip() or None
+        state = (data.get('state') or '').strip() or None
         description = (data.get('description') or 'Fresh farm produce.').strip()
         category = (data.get('category') or 'Vegetables').strip()
 
-        # Step 1: Save product with initial pending status
-        product = Product(
-            user_id=int(user_id) if user_id else None,
-            name=name,
-            price=price,
-            description=description,
-            image=image_url,
-            location=location,
-            quantity=quantity,
-            category=category,
-            moderation_status='pending',
-            created_at=datetime.utcnow()
-        )
-        db.session.add(product)
-        db.session.flush()
-
-        # Step 2: Run Content Moderation Engine
+        # STEP 1: RUN SYNCHRONOUS CONTENT MODERATION ENGINE BEFORE CREATING PRODUCT ROW
         mod_input = image_file if image_file else image_url
         mod_result = moderate_product_image(mod_input, category, name)
 
@@ -125,14 +121,80 @@ def create_product():
         reason = mod_result.get('reason', '')
         raw_output = mod_result.get('raw_model_output', '')
 
-        product.moderation_status = decision
-        product.moderation_reason = reason
-        product.moderated_at = datetime.utcnow()
-        product.moderated_by = 'ai'
+        # STEP 1.5: IF SERVICE UNAVAILABLE (503) -> DO NOT SILENTLY APPROVE OR SAVE ROW
+        if decision == 'unavailable':
+            return jsonify({
+                'error': 'moderation_unavailable',
+                'message': "We couldn't verify your image right now. Please try again."
+            }), 503
 
-        # Step 3: Write Moderation Log
+        # STEP 2: IF REJECTED -> DO NOT CREATE PRODUCT ROW! WRITE LOG & RETURN HTTP 422
+        if decision == 'rejected':
+            mod_log = ProductModerationLog(
+                product_id=None,
+                user_id=int(user_id) if user_id else None,
+                decision='rejected',
+                reason=reason,
+                raw_model_output=raw_output,
+                decided_by='ai',
+                created_at=datetime.utcnow()
+            )
+            db.session.add(mod_log)
+
+            if user_id:
+                seven_days_ago = datetime.utcnow() - timedelta(days=7)
+                farmer_rejected_count = db.session.query(ProductModerationLog).filter(
+                    ProductModerationLog.user_id == int(user_id),
+                    ProductModerationLog.decision == 'rejected',
+                    ProductModerationLog.created_at >= seven_days_ago
+                ).count()
+
+                if farmer_rejected_count >= 3:
+                    farmer = User.query.get(int(user_id))
+                    if farmer:
+                        farmer.flagged = True
+                        farmer.flag_note = f"Flagged automatically: {farmer_rejected_count} rejected product submissions within 7 days (Last: '{name}')."
+
+            db.session.commit()
+
+            return jsonify({
+                'error': 'moderation_failed',
+                'status': 'rejected',
+                'moderation_status': 'rejected',
+                'reason': reason,
+                'detected_content': mod_result.get('detected_content', ''),
+                'matches_declared_name': mod_result.get('matches_declared_name', False),
+                'matches_declared_category': mod_result.get('matches_declared_category', False),
+                'is_prohibited_or_unrelated': mod_result.get('is_prohibited_or_unrelated', False)
+            }), 422
+
+        # STEP 3: IF APPROVED OR NEEDS_REVIEW -> SAVE PRODUCT RECORD TO DATABASE
+        product = Product(
+            user_id=int(user_id) if user_id else None,
+            name=name,
+            price=price,
+            description=description,
+            image=image_url,
+            location=location,
+            address_text=address_text,
+            latitude=latitude,
+            longitude=longitude,
+            district=district,
+            state=state,
+            quantity=quantity,
+            category=category,
+            moderation_status=decision,
+            moderation_reason=reason,
+            moderated_at=datetime.utcnow(),
+            moderated_by='ai',
+            created_at=datetime.utcnow()
+        )
+        db.session.add(product)
+        db.session.flush()
+
         mod_log = ProductModerationLog(
             product_id=product.id,
+            user_id=product.user_id,
             decision=decision,
             reason=reason,
             raw_model_output=raw_output,
@@ -140,45 +202,24 @@ def create_product():
             created_at=datetime.utcnow()
         )
         db.session.add(mod_log)
-
-        # Step 4: Abuse Prevention Check for Farmer (3+ rejections in 7 days -> flag account)
-        if decision == 'rejected' and product.user_id:
-            seven_days_ago = datetime.utcnow() - timedelta(days=7)
-            farmer_rejected_count = db.session.query(ProductModerationLog).join(Product).filter(
-                Product.user_id == product.user_id,
-                ProductModerationLog.decision == 'rejected',
-                ProductModerationLog.created_at >= seven_days_ago
-            ).count()
-
-            if farmer_rejected_count >= 3:
-                farmer = User.query.get(product.user_id)
-                if farmer:
-                    farmer.flagged = True
-                    farmer.flag_note = f"Flagged automatically: {farmer_rejected_count} rejected product listings within 7 days (Last: '{product.name}')."
-
         db.session.commit()
 
-        # Step 5: Notify low stock if applicable
+        # Step 4: Low stock notification if applicable
         if product.quantity < 10 and product.user_id:
             farmer = User.query.get(product.user_id)
             if farmer:
                 notify(farmer, 'low_stock_farmer', product_name=product.name, quantity=product.quantity)
 
-        # Prepare user-facing response message
-        if decision == 'approved':
-            msg = "Product created and approved successfully!"
-        elif decision == 'rejected':
-            msg = f"Your listing for '{product.name}' was not approved: {reason}. Please upload a real, clear photo of your produce."
-        else:
-            msg = "Your listing is pending admin review."
+        status_code = 201 if decision == 'approved' else 202
+        msg = "Product created and approved successfully!" if decision == 'approved' else "Your listing is pending admin review."
 
         return jsonify({
             'message': msg,
-            'status': 'success' if decision == 'approved' else decision,
+            'status': 'success' if decision == 'approved' else 'needs_review',
             'moderation_status': decision,
             'moderation_reason': reason,
             'product': product.to_dict()
-        }), 201
+        }), status_code
 
     except Exception as e:
         db.session.rollback()
@@ -191,7 +232,7 @@ def view_all_products():
     per_page = int(request.args.get('per_page', 50))
     category = request.args.get('category')
 
-    query = Product.query.filter(Product.moderation_status == 'approved')
+    query = Product.query.filter(Product.moderation_status == 'approved', Product.is_deleted.is_(False))
     if category and category != 'All':
         query = query.filter(Product.category == category)
 
@@ -214,7 +255,7 @@ def view_farmer_products():
     if not user_id:
         return jsonify({'error': 'User ID required', 'status': 'error'}), 400
 
-    products = Product.query.filter(Product.user_id == int(user_id)).order_by(Product.id.desc()).all()
+    products = Product.query.filter(Product.user_id == int(user_id), Product.is_deleted.is_(False)).order_by(Product.id.desc()).all()
     product_list = [product.to_dict() for product in products]
 
     return jsonify({
@@ -226,7 +267,7 @@ def view_farmer_products():
 @products_bp.route('/api/v1/products/<int:id>', methods=['GET'])
 def view_product(id):
     product = Product.query.get(id)
-    if not product:
+    if not product or product.is_deleted:
         return jsonify({'error': 'Product not found'}), 404
         
     comments = Reviews.query.filter_by(product_id=id).all()
@@ -245,6 +286,52 @@ def view_product(id):
     data['avg_rating'] = round(avg_rating, 1) if avg_rating else 5.0
     data['comments'] = comment_list
     return jsonify(data), 200
+
+
+@products_bp.route('/api/v1/products/<int:id>', methods=['DELETE'])
+@jwt_required()
+def delete_product(id):
+    current_user_id = get_jwt_identity()
+    product = Product.query.get(id)
+    if not product or product.is_deleted:
+        return jsonify({'error': 'Product not found', 'status': 'error'}), 404
+
+    try:
+        user_id_int = int(current_user_id)
+    except (TypeError, ValueError):
+        user_id_int = None
+
+    user = User.query.get(user_id_int) if user_id_int else None
+    if not user:
+        return jsonify({'error': 'User not found', 'status': 'error'}), 401
+
+    if product.user_id != user.id and user.user_type != 'admin':
+        return jsonify({'error': 'Permission denied. You can only delete your own products.', 'status': 'error'}), 403
+
+    from backend.app.models.order import Order
+    order_count = Order.query.filter_by(product_id=id).count()
+
+    if order_count > 0:
+        product.is_deleted = True
+        product.deleted_at = datetime.utcnow()
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': f"Product '{product.name}' archived (soft-deleted) as it has existing orders.",
+            'deletion_type': 'soft'
+        }), 200
+    else:
+        prod_name = product.name
+        ProductModerationLog.query.filter_by(product_id=id).delete()
+        Reviews.query.filter_by(product_id=id).delete()
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': f"Product '{prod_name}' permanently deleted.",
+            'deletion_type': 'hard'
+        }), 200
+
 
 
 @products_bp.route('/api/v1/products/<int:id>', methods=['PUT', 'POST'])

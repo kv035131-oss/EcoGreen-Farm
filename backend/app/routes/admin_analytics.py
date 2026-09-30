@@ -394,17 +394,37 @@ def get_dead_stock():
 @analytics_bp.route('/sales-by-location', methods=['GET'])
 @admin_required
 def get_sales_by_location():
-    results = db.session.query(
-        Product.location,
-        func.count(Order.id).label('orders'),
-        func.sum(Order.amount).label('revenue')
-    ).join(Order, Product.id == Order.product_id).group_by(Product.location).all()
+    orders = db.session.query(Order, Product).join(Product, Order.product_id == Product.id).all()
+    location_stats = {}
+
+    for order, product in orders:
+        district = order.delivery_district or product.district
+        state = order.delivery_state or product.state
+
+        if district and state:
+            loc_key = f"{district}, {state}"
+        elif district:
+            loc_key = district
+        elif state:
+            loc_key = state
+        else:
+            loc_key = order.delivery_address_text or product.address_text or product.location or 'Local Region'
+
+        if loc_key not in location_stats:
+            location_stats[loc_key] = {'orders': 0, 'revenue': 0.0, 'district': district, 'state': state}
+
+        location_stats[loc_key]['orders'] += 1
+        location_stats[loc_key]['revenue'] += (order.amount or 0.0)
 
     data = [{
-        'location': r.location or 'Unknown',
-        'orders': r.orders,
-        'revenue': round(r.revenue or 0.0, 2)
-    } for r in results]
+        'location': loc,
+        'district': stats['district'],
+        'state': stats['state'],
+        'orders': stats['orders'],
+        'revenue': round(stats['revenue'], 2)
+    } for loc, stats in location_stats.items()]
+
+    data.sort(key=lambda x: x['revenue'], reverse=True)
 
     return jsonify({'status': 'success', 'locations': data}), 200
 

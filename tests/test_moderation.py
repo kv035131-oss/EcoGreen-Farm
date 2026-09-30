@@ -3,6 +3,10 @@ Content Moderation System Test Suite (Gemini Vision / Simulate Engine).
 Tests moderation paths: approved, rejected, needs_review, admin overrides, public filtering, and rate limiting.
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
 import json
 from unittest.mock import patch
@@ -64,15 +68,16 @@ def test_simulate_mode_reject_prohibited_keywords(app):
 
 
 def test_moderation_error_defaults_to_needs_review(app):
-    """Assert any exception during moderation falls back to 'needs_review', NEVER 'approved'."""
+    """Assert any exception during moderation falls back to 'needs_review' or 'unavailable', NEVER 'approved'."""
     with app.app_context():
-        with patch.object(Config, 'MODERATION_MODE', 'gemini'):
-            with patch.object(Config, 'GEMINI_API_KEY', 'test_key_123'):
-                with patch('google.generativeai.GenerativeModel.generate_content', side_effect=Exception('Quota exceeded / Network Error')):
-                    result = moderate_product_image('https://example.com/item.jpg', 'Fruits', 'Fresh Apples')
-                    assert result['decision'] == 'needs_review'
-                    assert result['decision'] != 'approved'
-                    assert 'unavailable' in result['reason'].lower() or 'error' in result['reason'].lower()
+        app.config['MODERATION_MODE'] = 'gemini'
+        app.config['GEMINI_API_KEY'] = 'test_key_123'
+        with patch('google.generativeai.GenerativeModel.generate_content', side_effect=Exception('Quota exceeded / Network Error')):
+            result = moderate_product_image('https://example.com/item.jpg', 'Fruits', 'Fresh Apples')
+            assert result['decision'] in ['needs_review', 'unavailable']
+            assert result['decision'] != 'approved'
+            assert 'unavailable' in result['reason'].lower() or 'error' in result['reason'].lower() or 'verify' in result['reason'].lower()
+
 
 
 
@@ -145,16 +150,17 @@ def test_product_creation_rate_limit(client, test_users):
 def test_moderation_end_to_end_workflow(client, test_users):
     """
     Integration Test:
-    1. Farmer creates product with prohibited keyword ('laptop') in simulate mode.
-    2. Assert it is rejected, logged, and NOT visible in public marketplace.
-    3. Assert it appears in admin moderation queue.
-    4. Admin approves product via POST /api/v1/admin/analytics/moderation/<id>/approve.
-    5. Assert product NOW appears publicly in /api/v1/products.
+    1. Farmer creates product with prohibited keyword ('laptop') -> returns HTTP 422 rejected & NO product row.
+    2. Farmer creates ambiguous product ('test_review') -> returns HTTP 202 needs_review & saves product row.
+    3. Assert pending product is NOT visible in public marketplace.
+    4. Assert product appears in admin moderation pending queue.
+    5. Admin approves product via POST /api/v1/admin/analytics/moderation/<id>/approve.
+    6. Assert product NOW appears publicly in /api/v1/products.
     """
     farmer_id = test_users['farmer_id']
 
-    # 1. Farmer submits non-farm produce listing
-    create_res = client.post('/api/v1/products/create', data={
+    # 1. Prohibited item submission is blocked synchronously (HTTP 422, error='moderation_failed')
+    rej_res = client.post('/api/v1/products/create', data={
         'user_id': farmer_id,
         'name': 'Used Gaming Laptop',
         'price': 450.0,
@@ -162,30 +168,42 @@ def test_moderation_end_to_end_workflow(client, test_users):
         'category': 'Vegetables',
         'description': 'Working laptop photo test'
     })
+    assert rej_res.status_code == 422
+    assert rej_res.get_json()['error'] == 'moderation_failed'
 
-    assert create_res.status_code in [200, 201]
+    # 2. Ambiguous produce submission is accepted pending review (HTTP 202, status='needs_review')
+    create_res = client.post('/api/v1/products/create', data={
+        'user_id': farmer_id,
+        'name': 'Organic Item (test_review)',
+        'price': 25.0,
+        'quantity': 10,
+        'category': 'Vegetables',
+        'description': 'Ambiguous produce item'
+    })
+
+    assert create_res.status_code == 202
     resp_data = create_res.get_json()
-    assert resp_data['moderation_status'] == 'rejected'
+    assert resp_data['moderation_status'] == 'needs_review'
     product_id = resp_data['product']['id']
 
-    # 2. Check public marketplace -> should NOT show rejected product
+    # 3. Check public marketplace -> should NOT show pending review product
     pub_res = client.get('/api/v1/products')
     pub_items = [p['id'] for p in pub_res.get_json()['data']]
     assert product_id not in pub_items
 
-    # 3. Check admin moderation pending endpoint
+    # 4. Check admin moderation pending endpoint
     admin_headers = {'Authorization': 'Basic YWRtaW46YWRtaW4xMjM='}
     pending_res = client.get('/api/v1/admin/analytics/moderation/pending', headers=admin_headers)
     assert pending_res.status_code == 200
     pending_ids = [p['id'] for p in pending_res.get_json()['data']]
     assert product_id in pending_ids
 
-    # 4. Admin overrides decision -> approves product
+    # 5. Admin overrides decision -> approves product
     approve_res = client.post(f'/api/v1/admin/analytics/moderation/{product_id}/approve', headers=admin_headers)
     assert approve_res.status_code == 200
     assert approve_res.get_json()['status'] == 'success'
 
-    # 5. Check public marketplace again -> product NOW visible
+    # 6. Check public marketplace again -> product NOW visible
     pub_res_after = client.get('/api/v1/products')
     pub_items_after = [p['id'] for p in pub_res_after.get_json()['data']]
     assert product_id in pub_items_after

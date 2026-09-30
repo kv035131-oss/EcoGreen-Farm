@@ -167,10 +167,38 @@ EcoGreen includes an automated, AI-driven content moderation engine powered by *
 
 ### Moderation Decisions & Admin Review Queue
 
-- **`approved`**: Listing is verified as real farm produce and published to the public marketplace immediately.
-- **`rejected`**: Listing is hidden from public view. The farmer sees the rejection reason on their dashboard.
-- **`needs_review`**: Ambiguous, low-quality, or service-fallback listings are sent to the **Admin Moderation Queue** (`/admin/moderation`).
+- **`approved` (HTTP 201 Created)**: Listing is verified as real farm produce matching declared product name and category, and published to the public marketplace immediately.
+- **`rejected` (HTTP 422 Unprocessable Entity - Synchronous Blocking)**: Listing is validated **BEFORE database insertion**. If rejected due to prohibited non-farm items or name-to-image mismatch:
+  - **No `Product` row is created in the database.**
+  - An inline red alert box appears in the Add Produce modal explaining the exact rejection reason while keeping form inputs intact.
+  - A moderation log entry is saved with `product_id = null`.
+- **`needs_review` (HTTP 202 Accepted)**: Ambiguous, low-quality, or service-fallback listings save a pending product record and route to the **Admin Moderation Queue** (`/admin/moderation`).
 - **Admin Override**: Administrators can review images, inspect AI reasoning, and manually Approve or Reject items from the admin dashboard card grid.
 - **Abuse Prevention**: Farmers with 3+ rejected listings within 7 days are automatically flagged on the Admin Users panel.
 - **Rate Limit**: Farmers are limited to max 20 product creation requests per hour. Note that Gemini free tier has a requests-per-minute limit, so heavy/automated testing should use `simulate` mode.
+
+---
+
+## 📍 Live Location Capture & OpenStreetMap Nominatim Policy
+
+EcoGreen features a reusable frontend location module (`location-capture.js`) for both the **Add Produce** and **Place Order** workflows to eliminate manual address typing errors while respecting OpenStreetMap Nominatim API usage policies.
+
+### Workflow & Reverse Geocoding Policy
+
+1. **Browser Geolocation API**:
+   - Triggers `navigator.geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 })`.
+   - On success, sends coordinates `{ latitude, longitude }` to the backend `/api/v1/geocode/reverse` endpoint.
+
+2. **OpenStreetMap Nominatim Compliance**:
+   - **User-Agent Header**: All upstream requests carry `User-Agent: EcoGreenFarmApp/1.0 (contact@ecogreen.com)` as required by Nominatim policy.
+   - **Server-Side Throttling**: Limits requests to ~1 request per second via server-side delays.
+   - **24-Hour Caching**: Caches reverse-geocoded addresses in server memory using 3-decimal lat/lng precision (~100m radius).
+
+3. **Manual Address Fallback**:
+   - On permission denial (`PERMISSION_DENIED`), timeout, position unavailable, or geocoding service failure, the widget displays a clear, friendly error message and auto-reveals a manual address fallback input field.
+   - The form cannot be submitted until either a valid captured location or manual address fallback is provided (validated both client-side and server-side).
+
+4. **Privacy & Security**:
+   - **Farm Location**: Publicly displayed on product cards to inform consumers of harvest origin.
+   - **Consumer Delivery Coordinates**: `delivery_latitude` and `delivery_longitude` are serialized **ONLY** for the assigned farmer for that specific order, the consumer who placed the order, or system administrators. Other consumers see only the general text address.
 

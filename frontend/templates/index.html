@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Razorpay Checkout SDK -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- EcoGreen Location Capture Module -->
+    <script src="/static/js/location-capture.js"></script>
     
     <style>
         :root {
@@ -873,8 +875,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Delivery Address / Notes</label>
-                    <textarea id="orderAddress" class="form-textarea" rows="2" placeholder="Provide delivery address or special instructions..." required></textarea>
+                    <label class="form-label"><i class="fa-solid fa-truck-ramp-box" style="color: var(--primary);"></i> Delivery Location Capture</label>
+                    <div id="orderLocationWidget"></div>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
@@ -898,6 +900,14 @@
 
             <div style="background: #ecfdf5; border-left: 4px solid var(--primary); padding: 0.75rem; border-radius: 8px; font-size: 0.82rem; color: #065f46; margin-bottom: 1.25rem;">
                 <i class="fa-solid fa-shield-halved"></i> <strong>Image Guidance:</strong> Upload a clear photo of your actual produce. Unrelated, inappropriate, or irrelevant images will be rejected by automated moderation.
+            </div>
+
+            <!-- Inline Red Alert Box for Moderation Rejections -->
+            <div id="prodModerationAlert" style="display: none; background: #fef2f2; border-left: 4px solid #ef4444; padding: 0.85rem; border-radius: 8px; margin-bottom: 1.25rem;">
+                <div style="font-weight: 700; color: #991b1b; font-size: 0.9rem; margin-bottom: 0.2rem;">
+                    <i class="fa-solid fa-circle-xmark"></i> Produce Listing Rejected
+                </div>
+                <div id="prodModerationReason" style="font-size: 0.85rem; color: #b91c1c;"></div>
             </div>
 
             <form id="addProductForm" onsubmit="submitNewProduct(event)">
@@ -931,8 +941,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Farm Location</label>
-                        <input type="text" id="prodLocation" class="form-input" placeholder="e.g. Green Valley Farm, Nakuru" required>
+                        <label class="form-label">Farm Location Capture</label>
+                        <div id="prodLocationWidget"></div>
                     </div>
                 </div>
 
@@ -1364,7 +1374,23 @@
                 return;
             }
 
-            grid.innerHTML = products.map(p => `
+            grid.innerHTML = products.map(p => {
+                const isOwnerOrAdmin = currentUser && (currentUser.id === p.user_id || currentUser.user_type === 'admin' || currentUser.username === 'admin');
+                const isPending = p.moderation_status === 'needs_review' || p.moderation_status === 'pending';
+
+                let deleteBtnHtml = isOwnerOrAdmin ? `
+                    <button class="btn btn-outline" style="border-color: #ef4444; color: #ef4444; padding: 0.5rem 0.8rem;" onclick="deleteProductConfirm(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')" title="Delete Listing">
+                        <i class="fa-solid fa-trash-can"></i> Delete
+                    </button>
+                ` : '';
+
+                let statusBadgeHtml = isPending ? `
+                    <div class="stock-badge" style="background: #fef3c7; color: #d97706; right: auto; left: 1rem;">
+                        <i class="fa-solid fa-clock"></i> Pending Review
+                    </div>
+                ` : '';
+
+                return `
                 <div class="product-card">
                     <div class="product-img-wrapper">
                         <img src="${p.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'}" alt="${escapeHtml(p.name)}" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=500'">
@@ -1374,6 +1400,7 @@
                         <div class="stock-badge">
                             ${p.quantity} in stock
                         </div>
+                        ${statusBadgeHtml}
                     </div>
                     <div class="product-info">
                         <h3 class="product-title">${escapeHtml(p.name)}</h3>
@@ -1384,14 +1411,44 @@
                                 <i class="fa-solid fa-star"></i> ${p.avg_rating ? p.avg_rating : '5.0'}
                             </div>
                         </div>
-                        <div class="product-actions">
-                            <button class="btn btn-primary" onclick="openOrderModal(${p.id})">
+                        <div class="product-actions" style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary" style="flex: 1;" onclick="openOrderModal(${p.id})">
                                 <i class="fa-solid fa-cart-shopping"></i> Order Now
                             </button>
+                            ${deleteBtnHtml}
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
+        }
+
+        // Delete Product Confirmation & API Request
+        async function deleteProductConfirm(productId, productName) {
+            if (!confirm(`Are you sure you want to delete '${productName}'? This cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
+
+                const res = await fetch(`/api/v1/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+
+                const json = await res.json();
+                if (!res.ok || json.status === 'error') {
+                    throw new Error(json.error || 'Failed to delete product');
+                }
+
+                showToast(json.message || 'Product deleted successfully!');
+                await loadProducts();
+            } catch (err) {
+                console.error('Delete product error:', err);
+                showToast(err.message || 'Error deleting product', true);
+            }
         }
 
         // Search Filter
@@ -1470,6 +1527,16 @@
             } else {
                 document.getElementById('orderPhone').value = '254712345678';
             }
+
+            EcoGreenLocation.init('orderLocationWidget', {
+                hiddenLatId: 'orderLat',
+                hiddenLngId: 'orderLng',
+                hiddenAddressId: 'orderAddressText',
+                hiddenDistrictId: 'orderDistrict',
+                hiddenStateId: 'orderState',
+                manualInputId: 'orderManualAddress'
+            });
+
             document.getElementById('orderModal').classList.add('active');
         }
 
@@ -1483,6 +1550,12 @@
         // Submit Order & Trigger Razorpay Payment
         async function submitOrder(e) {
             e.preventDefault();
+            const locData = EcoGreenLocation.getData('orderLocationWidget');
+            if (!locData.isValid) {
+                showToast('Please capture delivery location or enter an address', true);
+                return;
+            }
+
             const productId = parseInt(document.getElementById('orderProductId').value);
             const unitPrice = parseFloat(document.getElementById('orderUnitPrice').value) || 0;
             const qty = parseInt(document.getElementById('orderQuantity').value) || 1;
@@ -1502,7 +1575,12 @@
                         user_id: currentUser ? currentUser.id : 1,
                         status: 'Pending',
                         phone_number: phone,
-                        amount: totalAmount
+                        amount: totalAmount,
+                        delivery_address_text: locData.address_text,
+                        delivery_latitude: locData.latitude,
+                        delivery_longitude: locData.longitude,
+                        delivery_district: locData.district,
+                        delivery_state: locData.state
                     })
                 });
 
@@ -1619,18 +1697,50 @@
                 showToast('Please log in or register to list produce', true);
                 return;
             }
+            const alertBox = document.getElementById('prodModerationAlert');
+            if (alertBox) alertBox.style.display = 'none';
+
+            EcoGreenLocation.init('prodLocationWidget', {
+                hiddenLatId: 'prodLat',
+                hiddenLngId: 'prodLng',
+                hiddenAddressId: 'prodAddressText',
+                hiddenDistrictId: 'prodDistrict',
+                hiddenStateId: 'prodState',
+                manualInputId: 'prodManualAddress'
+            });
+
             document.getElementById('addProductModal').classList.add('active');
         }
 
-        // Submit New Product
+        // Submit New Product with Real-time AI Moderation Feedback
         async function submitNewProduct(e) {
             e.preventDefault();
+            const locData = EcoGreenLocation.getData('prodLocationWidget');
+            if (!locData.isValid) {
+                showToast('Please capture your farm location or enter an address', true);
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const origBtnHtml = submitBtn ? submitBtn.innerHTML : 'Publish Produce Listing';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying image with AI...';
+            }
+
+            const prodName = document.getElementById('prodName').value;
             const formData = new FormData();
-            formData.append('name', document.getElementById('prodName').value);
+            formData.append('name', prodName);
             formData.append('price', document.getElementById('prodPrice').value);
             formData.append('quantity', document.getElementById('prodQuantity').value);
-            formData.append('location', document.getElementById('prodLocation').value);
             formData.append('description', document.getElementById('prodDesc').value);
+
+            formData.append('address_text', locData.address_text);
+            formData.append('location', locData.address_text);
+            if (locData.latitude !== null) formData.append('latitude', locData.latitude);
+            if (locData.longitude !== null) formData.append('longitude', locData.longitude);
+            if (locData.district) formData.append('district', locData.district);
+            if (locData.state) formData.append('state', locData.state);
 
             const categoryElem = document.getElementById('prodCategory');
             if (categoryElem) {
@@ -1660,30 +1770,94 @@
                 });
 
                 const json = await res.json();
+
+                // 1. SERVICE UNAVAILABLE (HTTP 503)
+                if (res.status === 503 || json.error === 'moderation_unavailable') {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origBtnHtml;
+                    }
+                    const alertBox = document.getElementById('prodModerationAlert');
+                    const reasonBox = document.getElementById('prodModerationReason');
+                    if (reasonBox) {
+                        reasonBox.innerHTML = `
+                            ❌ We couldn't verify your image right now — please try again.
+                            <button type="button" class="btn btn-outline" style="margin-top: 0.5rem; padding: 0.3rem 0.75rem; font-size: 0.8rem; display: block;" onclick="document.getElementById('addProductForm').requestSubmit()">
+                                <i class="fa-solid fa-rotate-right"></i> Retry Verification
+                            </button>
+                        `;
+                    }
+                    if (alertBox) alertBox.style.display = 'block';
+                    showToast("We couldn't verify your image right now — please try again.", true);
+                    return;
+                }
+
+                // 2. MODERATION REJECTED (HTTP 422)
+                if (res.status === 422 || json.status === 'rejected' || json.error === 'moderation_failed') {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origBtnHtml;
+                    }
+
+                    let errorMsg = '';
+                    if (json.is_prohibited_or_unrelated) {
+                        errorMsg = `❌ This image doesn't show a valid farm product and cannot be listed.`;
+                    } else if (json.matches_declared_name === false) {
+                        const detected = json.detected_content ? `looks like ${json.detected_content}` : 'does not match the produce item';
+                        errorMsg = `❌ The photo doesn't look like '${escapeHtml(prodName)}' — it ${escapeHtml(detected)}. Please upload a matching photo or correct the product name.`;
+                    } else {
+                        errorMsg = `❌ ${escapeHtml(json.reason || json.message || 'Product image or name rejected by content moderation.')}`;
+                    }
+
+                    const alertBox = document.getElementById('prodModerationAlert');
+                    const reasonBox = document.getElementById('prodModerationReason');
+                    if (reasonBox) reasonBox.textContent = errorMsg;
+                    if (alertBox) alertBox.style.display = 'block';
+
+                    const modalCard = document.querySelector('#addProductModal .modal-card');
+                    if (modalCard) modalCard.scrollTop = 0;
+
+                    showToast(errorMsg, true);
+                    return;
+                }
+
                 if (!res.ok || json.status === 'error') {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origBtnHtml;
+                    }
                     throw new Error(json.error || json.message || 'Failed to create product listing');
                 }
 
-                const modStatus = json.moderation_status || json.status;
-                if (modStatus === 'rejected') {
-                    showToast(json.message || 'Product rejected by moderation filter.', true);
-                    return;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnHtml;
                 }
+
+                const alertBox = document.getElementById('prodModerationAlert');
+                if (alertBox) alertBox.style.display = 'none';
 
                 closeModal('addProductModal');
                 document.getElementById('addProductForm').reset();
 
-                if (modStatus === 'needs_review') {
-                    showToast('Listing submitted! Pending admin review before appearing in marketplace.', false);
+                const modStatus = json.moderation_status || json.status;
+                if (res.status === 202 || modStatus === 'needs_review') {
+                    showToast('Your listing is pending admin review before appearing in marketplace.', false);
                 } else {
                     showToast(json.message || 'Produce successfully listed and published!');
                 }
                 await loadProducts();
+
             } catch (err) {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = origBtnHtml;
+                }
                 console.error('Add product error:', err);
                 showToast(err.message || 'Error adding product', true);
             }
         }
+
 
         // Orders View Dashboard Modal
         function openOrdersModal() {

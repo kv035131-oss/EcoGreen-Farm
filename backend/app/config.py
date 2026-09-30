@@ -42,14 +42,21 @@ class Config:
     SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '').strip()
     SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '').strip()
 
-    # Content Moderation (Gemini Vision)
+    # Content Moderation — supports 'simulate' | 'gemini' | 'claude'
     MODERATION_MODE = os.environ.get('MODERATION_MODE', 'simulate').strip().lower()
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
-    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash').strip()
+    GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash').strip()
+    ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '').strip()
+    MODERATION_MODEL = os.environ.get('MODERATION_MODEL', 'claude-sonnet-4-6').strip()
 
+    # Auto-fallback: if requested engine has no key, fall back to simulate
     if MODERATION_MODE == 'gemini' and not GEMINI_API_KEY:
-        import logging
-        logging.warning("MODERATION_MODE is set to 'gemini' but GEMINI_API_KEY is missing. Falling back to 'simulate' mode.")
+        import logging as _lg
+        _lg.warning("MODERATION_MODE='gemini' but GEMINI_API_KEY is empty. Falling back to simulate.")
+        MODERATION_MODE = 'simulate'
+    elif MODERATION_MODE == 'claude' and not ANTHROPIC_API_KEY:
+        import logging as _lg
+        _lg.warning("MODERATION_MODE='claude' but ANTHROPIC_API_KEY is empty. Falling back to simulate.")
         MODERATION_MODE = 'simulate'
 
 
@@ -67,3 +74,5 @@ class TestingConfig(Config):
     """Testing Environment Configuration."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+
+

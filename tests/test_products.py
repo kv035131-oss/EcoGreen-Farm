@@ -17,6 +17,7 @@ from backend.app.models import User, Product
 @pytest.fixture
 def app_instance():
     app = create_app('testing')
+    app.config['MODERATION_MODE'] = 'simulate'
     with app.app_context():
         db.create_all()
         farmer = User(

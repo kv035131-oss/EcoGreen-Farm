@@ -43,10 +43,26 @@ def trigger_order_notifications(order: Order, event_type: str):
         print("Notification trigger error (swallowed):", e)
 
 
-def serialize_order(order: Order) -> dict:
-    """Serializes Order model into frontend JSON dictionary format."""
+def serialize_order(order: Order, requesting_user_id: int = None, requesting_user_role: str = None) -> dict:
+    """
+    Serializes Order model into frontend JSON dictionary format.
+    Enforces Privacy Rule (Step A5): Consumer delivery lat/lng is visible ONLY to assigned farmer,
+    order consumer, or admin.
+    """
     product = Product.query.get(order.product_id)
     user = User.query.get(order.user_id)
+
+    show_coordinates = False
+    if requesting_user_role == 'admin':
+        show_coordinates = True
+    elif requesting_user_id:
+        try:
+            req_id = int(requesting_user_id)
+            if req_id == order.user_id or (product and req_id == product.user_id):
+                show_coordinates = True
+        except (ValueError, TypeError):
+            show_coordinates = False
+
     return {
         'id': order.id,
         'product_id': order.product_id,
@@ -57,6 +73,11 @@ def serialize_order(order: Order) -> dict:
         'user_name': user.username if user else 'Customer',
         'amount': order.amount,
         'phone_number': order.phone_number,
+        'delivery_address_text': order.delivery_address_text or 'Customer Location',
+        'delivery_district': order.delivery_district,
+        'delivery_state': order.delivery_state,
+        'delivery_latitude': order.delivery_latitude if show_coordinates else None,
+        'delivery_longitude': order.delivery_longitude if show_coordinates else None,
         'status': order.order_status or 'Pending',
         'payment_status': getattr(order, 'payment_status', 'Unpaid') or 'Unpaid',
         'orderDate': getattr(order, 'transaction_date', order.confirmed_at or datetime.utcnow()).strftime("%Y-%m-%d %H:%M") if getattr(order, 'transaction_date', None) else datetime.utcnow().strftime("%Y-%m-%d %H:%M")
