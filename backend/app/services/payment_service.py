@@ -4,10 +4,15 @@ Handles order creation, signature verification, and webhook signature verificati
 """
 
 import os
-import razorpay
+try:
+    import razorpay
+except ImportError:
+    razorpay = None
 from flask import current_app
 
 def get_razorpay_client():
+    if razorpay is None:
+        raise RuntimeError("razorpay package is not installed. Set RAZORPAY_SIMULATE=true to use simulation mode.")
     key_id = current_app.config.get('RAZORPAY_KEY_ID', os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_sample'))
     key_secret = current_app.config.get('RAZORPAY_KEY_SECRET', os.environ.get('RAZORPAY_KEY_SECRET', 'sample_secret'))
     return razorpay.Client(auth=(key_id, key_secret))
@@ -19,6 +24,16 @@ def create_razorpay_order(amount, receipt_id):
     receipt_id: ID or reference for the order.
     Returns Razorpay order dictionary.
     """
+    simulate = os.environ.get('RAZORPAY_SIMULATE', 'true').strip().lower() == 'true'
+    if simulate or razorpay is None:
+        # Simulated order for demo/testing
+        return {
+            'id': f'order_simulate_{receipt_id}',
+            'amount': int(round(float(amount) * 100)),
+            'currency': 'INR',
+            'receipt': str(receipt_id),
+            'status': 'created'
+        }
     client = get_razorpay_client()
     paise_amount = int(round(float(amount) * 100))
     order_data = {
