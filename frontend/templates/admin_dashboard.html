@@ -15,7 +15,7 @@
     
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    
     <style>
         :root {
             --primary: #059669;
@@ -587,6 +587,9 @@
                 <span class="admin-badge-header">Analytics DB</span>
             </a>
             <ul class="nav-links">
+                <li class="lang-switcher" style="display: flex; align-items: center; background: #e2e8f0; border-radius: 20px; padding: 2px; border: 1px solid var(--border-color);">
+                    <button onclick="setLanguage('en')" class="lang-btn" data-lang="en" style="border: none; background: transparent; padding: 4px 10px; border-radius: 16px; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">EN</button>
+                    </li>
                 <li>
                     <div class="user-chip">
                         <i class="fa-solid fa-user-shield"></i>
@@ -620,11 +623,11 @@
 
             <div class="filter-group">
                 <span id="lastUpdated" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">Updated: Just now</span>
-                <button onclick="fetchDashboardData(true)" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+                <button onclick="fetchDashboardData(true)" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span></button>
                 <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; font-weight: 500; cursor: pointer;">
-                    <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh(this)"> Auto (60s)
+                    <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh(this)"> <span>Auto (60s)</span>
                 </label>
-                <button onclick="exportAllCSV()" class="btn-action btn-export"><i class="fa-solid fa-file-csv"></i> Export All (CSV)</button>
+                <button onclick="exportAllCSV()" class="btn-action btn-export"><i class="fa-solid fa-file-csv"></i> <span>Export All (CSV)</span></button>
             </div>
         </div>
     </div>
@@ -632,15 +635,15 @@
     <!-- Navigation Tabs -->
     <div class="tabs-nav">
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="switchTab('overview', this)"><i class="fa-solid fa-gauge-high"></i> Overview</button>
-            <button class="tab-btn" onclick="switchTab('orders-rev', this)"><i class="fa-solid fa-chart-line"></i> Orders & Revenue</button>
-            <button class="tab-btn" onclick="switchTab('farmers', this)"><i class="fa-solid fa-wheat-awn"></i> Farmers</button>
-            <button class="tab-btn" onclick="switchTab('consumers', this)"><i class="fa-solid fa-users"></i> Consumers</button>
-            <button class="tab-btn" onclick="switchTab('products-inv', this)"><i class="fa-solid fa-boxes-stacked"></i> Products & Stock</button>
-            <button class="tab-btn" onclick="switchTab('geography', this)"><i class="fa-solid fa-map-location-dot"></i> Geography & Timing</button>
-            <button class="tab-btn" onclick="switchTab('growth-pay', this)"><i class="fa-solid fa-credit-card"></i> Growth & Payments</button>
-            <button class="tab-btn" onclick="switchTab('whatsapp-notifs', this)"><i class="fa-brands fa-whatsapp"></i> WhatsApp Notifications</button>
-            <button class="tab-btn" onclick="switchTab('moderation', this)"><i class="fa-solid fa-shield-halved"></i> Content Moderation <span id="moderationBadge" style="background:#ef4444; color:white; font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:12px; display:none; margin-left:0.3rem;">0</span></button>
+            <button class="tab-btn active" onclick="switchTab('overview', this)"><i class="fa-solid fa-gauge-high"></i> <span>Overview</span></button>
+            <button class="tab-btn" onclick="switchTab('orders-rev', this)"><i class="fa-solid fa-chart-line"></i> <span>Orders & Revenue</span></button>
+            <button class="tab-btn" onclick="switchTab('farmers', this)"><i class="fa-solid fa-wheat-awn"></i> <span>Farmers</span></button>
+            <button class="tab-btn" onclick="switchTab('consumers', this)"><i class="fa-solid fa-users"></i> <span>Consumers</span></button>
+            <button class="tab-btn" onclick="switchTab('products-inv', this)"><i class="fa-solid fa-boxes-stacked"></i> <span>Products & Stock</span></button>
+            <button class="tab-btn" onclick="switchTab('geography', this)"><i class="fa-solid fa-map-location-dot"></i> <span>Geography & Timing</span></button>
+            <button class="tab-btn" onclick="switchTab('growth-pay', this)"><i class="fa-solid fa-credit-card"></i> <span>Growth & Payments</span></button>
+            <button class="tab-btn" onclick="switchTab('whatsapp-notifs', this)"><i class="fa-brands fa-whatsapp"></i> <span>WhatsApp Notifications</span></button>
+            <button class="tab-btn" onclick="switchTab('moderation', this)"><i class="fa-solid fa-shield-halved"></i> <span>Content Moderation</span> <span id="moderationBadge" style="background:#ef4444; color:white; font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:12px; display:none; margin-left:0.3rem;">0</span></button>
         </div>
     </div>
 
@@ -729,7 +732,7 @@
             <div class="charts-row">
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-chart-area"></i> Orders & Revenue Over Time</div>
+                        <div class="chart-title"><i class="fa-solid fa-chart-area"></i> <span>Orders & Revenue Over Time</span></div>
                         <div class="chart-actions">
                             <button onclick="downloadCSV('orders-over-time')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
                             <button onclick="downloadPNG('chartOrdersOverTime')" class="btn-icon" title="Download PNG"><i class="fa-solid fa-image"></i></button>
@@ -740,7 +743,7 @@
 
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-chart-pie"></i> Order Status Breakdown</div>
+                        <div class="chart-title"><i class="fa-solid fa-chart-pie"></i> <span>Order Status Breakdown</span></div>
                         <div class="chart-actions">
                             <button onclick="downloadCSV('order-status-breakdown')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
                             <button onclick="downloadPNG('chartOrderStatus')" class="btn-icon" title="Download PNG"><i class="fa-solid fa-image"></i></button>
@@ -753,7 +756,7 @@
             <div class="charts-row">
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-filter"></i> Fulfillment Funnel Drop-off</div>
+                        <div class="chart-title"><i class="fa-solid fa-filter"></i> <span>Fulfillment Funnel Drop-off</span></div>
                         <div class="chart-actions">
                             <button onclick="downloadCSV('fulfillment-funnel')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
                         </div>
@@ -763,7 +766,7 @@
 
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-cart-arrow-down"></i> Abandoned Orders Summary</div>
+                        <div class="chart-title"><i class="fa-solid fa-cart-arrow-down"></i> <span>Abandoned Orders Summary</span></div>
                         <div class="chart-actions">
                             <button onclick="downloadCSV('abandoned-orders')" class="btn-icon" title="Download CSV"><i class="fa-solid fa-file-csv"></i></button>
                         </div>
@@ -787,7 +790,7 @@
             <div class="charts-row">
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-chart-column"></i> Orders Received vs Confirmed per Farmer</div>
+                        <div class="chart-title"><i class="fa-solid fa-chart-column"></i> <span>Orders Received vs Confirmed per Farmer</span></div>
                         <div class="chart-actions">
                             <button onclick="downloadCSV('farmer-performance')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
                             <button onclick="downloadPNG('chartFarmerPerf')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
@@ -798,7 +801,7 @@
 
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-clock"></i> Response Time Distribution</div>
+                        <div class="chart-title"><i class="fa-solid fa-clock"></i> <span>Response Time Distribution</span></div>
                         <div class="chart-actions">
                             <button onclick="downloadCSV('farmer-response-time')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button>
                             <button onclick="downloadPNG('chartResponseTime')" class="btn-icon"><i class="fa-solid fa-image"></i></button>
@@ -809,7 +812,7 @@
             </div>
 
             <div class="table-card">
-                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-trophy"></i> Farmer Performance Leaderboard</h3>
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-trophy"></i> <span>Farmer Performance Leaderboard</span></h3>
                 <table>
                     <thead>
                         <tr><th>Farmer Name</th><th>Location</th><th>Products</th><th>Orders Received</th><th>Confirmed</th><th>Rejected</th><th>Confirmation %</th><th>Avg Response (hrs)</th><th>Total Revenue</th></tr>
@@ -821,7 +824,7 @@
             </div>
 
             <div class="table-card">
-                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-triangle-exclamation"></i> Inactive Farmers Alert (30+ Days)</h3>
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-triangle-exclamation"></i> <span>Inactive Farmers Alert (30+ Days)</span></h3>
                 <table>
                     <thead>
                         <tr><th>Farmer Name</th><th>Location</th><th>Last Listing Date</th><th>Last Confirmation Date</th></tr>
@@ -888,7 +891,7 @@
 
             <div class="charts-row">
                 <div class="table-card" style="flex: 1;">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);"><i class="fa-solid fa-box-open"></i> Low-Stock & Out-of-Stock Alerts</h3>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);"><i class="fa-solid fa-box-open"></i> <span>Low-Stock & Out-of-Stock Alerts</span></h3>
                     <table>
                         <thead><tr><th>Product</th><th>Farmer</th><th>Category</th><th>Stock Left</th></tr></thead>
                         <tbody id="tblLowStock"><tr><td colspan="4" style="text-align: center;">Loading stock alerts...</td></tr></tbody>
@@ -896,7 +899,7 @@
                 </div>
 
                 <div class="table-card" style="flex: 1;">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-skull"></i> Dead Stock (No orders in 30 days)</h3>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-skull"></i> <span>Dead Stock (No orders in 30 days)</span></h3>
                     <table>
                         <thead><tr><th>Product</th><th>Farmer</th><th>Listed Date</th><th>Current Stock</th></tr></thead>
                         <tbody id="tblDeadStock"><tr><td colspan="4" style="text-align: center;">Loading dead stock...</td></tr></tbody>
@@ -910,7 +913,7 @@
             <div class="charts-row">
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-map-location-dot"></i> Sales & Orders by Location</div>
+                        <div class="chart-title"><i class="fa-solid fa-map-location-dot"></i> <span>Sales & Orders by Location</span></div>
                         <div class="chart-actions"><button onclick="downloadCSV('sales-by-location')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
                     </div>
                     <div class="chart-container"><canvas id="chartLocationSales"></canvas></div>
@@ -918,7 +921,7 @@
 
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-calendar-day"></i> Orders by Weekday & Hour</div>
+                        <div class="chart-title"><i class="fa-solid fa-calendar-day"></i> <span>Orders by Weekday & Hour</span></div>
                         <div class="chart-actions"><button onclick="downloadCSV('orders-by-weekday')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
                     </div>
                     <div class="chart-container"><canvas id="chartWeekdayOrders"></canvas></div>
@@ -926,7 +929,7 @@
             </div>
 
             <div class="table-card">
-                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-fire"></i> Order Heatmap (Weekday x Hour Intensity)</h3>
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-fire"></i> <span>Order Heatmap (Weekday x Hour Intensity)</span></h3>
                 <div id="heatmapContainer" style="overflow-x: auto;"></div>
             </div>
         </section>
@@ -936,7 +939,7 @@
             <div class="charts-row">
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-user-gear"></i> Platform User Growth</div>
+                        <div class="chart-title"><i class="fa-solid fa-user-gear"></i> <span>Platform User Growth</span></div>
                         <div class="chart-actions"><button onclick="downloadCSV('user-growth')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
                     </div>
                     <div class="chart-container"><canvas id="chartUserGrowth"></canvas></div>
@@ -944,7 +947,7 @@
 
                 <div class="chart-card">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-wallet"></i> Payment Methods Split</div>
+                        <div class="chart-title"><i class="fa-solid fa-wallet"></i> <span>Payment Methods Split</span></div>
                         <div class="chart-actions"><button onclick="downloadCSV('payment-methods')" class="btn-icon"><i class="fa-solid fa-file-csv"></i></button></div>
                     </div>
                     <div class="chart-container"><canvas id="chartPaymentMethods"></canvas></div>
@@ -985,10 +988,10 @@
             <div class="charts-row" style="margin-top: 1.5rem;">
                 <div class="chart-card" style="grid-column: span 2;">
                     <div class="chart-card-header">
-                        <div class="chart-title"><i class="fa-solid fa-chart-area"></i> Daily WhatsApp Notification Volume</div>
+                        <div class="chart-title"><i class="fa-solid fa-chart-area"></i> <span>Daily WhatsApp Notification Volume</span></div>
                         <div class="chart-actions">
-                            <button onclick="sendTestEmailAdmin()" class="btn-action" style="background: #059669; color: white; border: none;"><i class="fa-solid fa-paper-plane"></i> Send Test Email</button>
-                            <button onclick="fetchNotificationLogs()" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> Refresh Logs</button>
+                            <button onclick="sendTestEmailAdmin()" class="btn-action" style="background: #059669; color: white; border: none;"><i class="fa-solid fa-paper-plane"></i> <span>Send Test Email</span></button>
+                            <button onclick="fetchNotificationLogs()" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> <span>Refresh Logs</span></button>
                         </div>
                     </div>
                     <div class="chart-container" style="height: 250px;"><canvas id="chartNotifDaily"></canvas></div>
@@ -997,7 +1000,7 @@
 
             <div class="table-card" style="margin-top: 1.5rem;">
                 <div class="table-card-header">
-                    <div class="table-title"><i class="fa-solid fa-list-check"></i> WhatsApp Notification Logs & Inbound Replies</div>
+                    <div class="table-title"><i class="fa-solid fa-list-check"></i> <span>WhatsApp Notification Logs & Inbound Replies</span></div>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
                         <select id="notifStatusFilter" onchange="fetchNotificationLogs()" class="date-input" style="padding: 0.3rem 0.6rem;">
                             <option value="">All Statuses</option>
@@ -1046,13 +1049,13 @@
         <section id="pane-moderation" class="section-pane">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
-                    <h2><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Produce Content Moderation Queue</h2>
+                    <h2><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> <span>Produce Content Moderation Queue</span></h2>
                     <p style="color: var(--text-muted); font-size: 0.9rem;">Review AI-flagged or pending produce listings before they appear on the public marketplace.</p>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="fetchModerationQueue('needs_review')" class="btn-action" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-triangle-exclamation"></i> Needs Review</button>
-                    <button onclick="fetchModerationQueue('rejected')" class="btn-action" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-xmark"></i> Rejected</button>
-                    <button onclick="fetchModerationQueue('')" class="btn-action" style="background: var(--primary-light); color: var(--primary-hover);"><i class="fa-solid fa-list"></i> All Queue</button>
+                    <button onclick="fetchModerationQueue('needs_review')" class="btn-action" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-triangle-exclamation"></i> <span>Needs Review</span></button>
+                    <button onclick="fetchModerationQueue('rejected')" class="btn-action" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-xmark"></i> <span>Rejected</span></button>
+                    <button onclick="fetchModerationQueue('')" class="btn-action" style="background: var(--primary-light); color: var(--primary-hover);"><i class="fa-solid fa-list"></i> <span>All Queue</span></button>
                 </div>
             </div>
 

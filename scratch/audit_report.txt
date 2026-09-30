@@ -1,0 +1,282 @@
+TOTAL AUDIT MATCHES FOUND: 281
+backend\app\__init__.py:45: "ALTER TABLE user ADD COLUMN preferred_language VARCHAR(10) DEFAULT 'en'",
+backend\app\models\user.py:24: preferred_language = db.Column(db.String(10), default='en', nullable=False)
+backend\app\models\user.py:45: 'notification_language': self.notification_language or self.preferred_language or 'en',
+backend\app\models\user.py:46: 'preferred_language': self.preferred_language or self.notification_language or 'en',
+backend\app\routes\auth.py:33: lang = getattr(user, 'preferred_language', None) or getattr(user, 'notification_language', 'en') or 'en'
+backend\app\routes\auth.py:43: "preferred_language": lang
+backend\app\routes\auth.py:62: lang = getattr(user, 'preferred_language', None) or getattr(user, 'notification_language', 'en') or 'en'
+backend\app\routes\auth.py:71: 'preferred_language': lang
+backend\app\routes\auth.py:90: lang = data.get('preferred_language') or data.get('language') or data.get('notification_language')
+backend\app\routes\auth.py:92: if hasattr(user, 'preferred_language'):
+backend\app\routes\auth.py:93: user.preferred_language = lang
+backend\app\routes\auth.py:100: 'preferred_language': lang
+backend\app\routes\auth.py:116: preferred_language = data.get('preferred_language', 'en')
+backend\app\routes\auth.py:130: if hasattr(user, 'preferred_language'):
+backend\app\routes\auth.py:131: user.preferred_language = preferred_language
+backend\app\routes\auth.py:133: user.notification_language = preferred_language
+backend\app\routes\auth.py:149: 'preferred_language': preferred_language
+backend\app\routes\auth.py:169: 'preferred_language': getattr(user, 'preferred_language', 'en')
+backend\app\services\backend_translations.py:3: Provides translations for server-generated API messages, moderation reasons, and error responses.
+backend\app\services\backend_translations.py:6: BACKEND_TRANSLATIONS = {
+backend\app\services\backend_translations.py:35: lang_dict = BACKEND_TRANSLATIONS.get(lang, BACKEND_TRANSLATIONS['en'])
+backend\app\services\backend_translations.py:36: msg = lang_dict.get(key, BACKEND_TRANSLATIONS['en'].get(key, key))
+backend\app\services\notification_templates.py:3: Languages supported: en (English), hi (Hindi), kn (Kannada), ta (Tamil), te (Telugu), ml (Malayalam)
+frontend\static\js\i18n.js:2: * EcoGreen i18n Translation Engine
+frontend\static\js\i18n.js:3: * Multi-language support (English / Kannada)
+frontend\static\js\i18n.js:7: let currentLang = localStorage.getItem('ecogreen_lang') || 'en';
+frontend\static\js\i18n.js:8: let translations = {};
+frontend\static\js\i18n.js:9: let enTranslations = {};
+frontend\static\js\i18n.js:11: async function loadTranslations(lang) {
+frontend\static\js\i18n.js:13: const resp = await fetch(`/static/translations/${lang}.json`);
+frontend\static\js\i18n.js:15: translations = await resp.json();
+frontend\static\js\i18n.js:18: console.warn(`[i18n] Failed to load ${lang}.json:`, err);
+frontend\static\js\i18n.js:22: if (lang !== 'en' && Object.keys(enTranslations).length === 0) {
+frontend\static\js\i18n.js:24: const enResp = await fetch(`/static/translations/en.json`);
+frontend\static\js\i18n.js:26: enTranslations = await enResp.json();
+frontend\static\js\i18n.js:29: console.warn('[i18n] Failed to load fallback en.json:', err);
+frontend\static\js\i18n.js:35: let val = translations[key];
+frontend\static\js\i18n.js:36: if (val === undefined && enTranslations[key] !== undefined) {
+frontend\static\js\i18n.js:37: val = enTranslations[key];
+frontend\static\js\i18n.js:53: function applyTranslations() {
+frontend\static\js\i18n.js:54: // Translate text elements with data-i18n
+frontend\static\js\i18n.js:55: document.querySelectorAll('[data-i18n]').forEach(el => {
+frontend\static\js\i18n.js:56: const key = el.getAttribute('data-i18n');
+frontend\static\js\i18n.js:71: // Translate placeholders with data-i18n-placeholder
+frontend\static\js\i18n.js:72: document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+frontend\static\js\i18n.js:73: const key = el.getAttribute('data-i18n-placeholder');
+frontend\static\js\i18n.js:93: localStorage.setItem('ecogreen_lang', newLang);
+frontend\static\js\i18n.js:95: await loadTranslations(newLang);
+frontend\static\js\i18n.js:96: applyTranslations();
+frontend\static\js\i18n.js:108: body: JSON.stringify({ preferred_language: newLang })
+frontend\static\js\i18n.js:111: console.warn('[i18n] Failed to sync preference to server:', e);
+frontend\static\js\i18n.js:126: await loadTranslations(currentLang);
+frontend\static\js\i18n.js:127: applyTranslations();
+frontend\templates\admin_dashboard.html:18: <script src="/static/js/i18n.js"></script>
+frontend\templates\admin_dashboard.html:588: <span class="admin-badge-header" data-i18n="admin.analytics_db">Analytics DB</span>
+frontend\templates\admin_dashboard.html:593: <button onclick="setLanguage('kn')" class="lang-btn" data-lang="kn" style="border: none; background: transparent; padding: 4px 10px; border-radius: 16px; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">ಕನ್ನಡ</button>
+frontend\templates\admin_dashboard.html:601: <li><button onclick="logoutAdmin()" class="btn-logout" data-i18n="nav.logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button></li>
+frontend\templates\admin_dashboard.html:610: <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-right: 0.25rem;" data-i18n="admin.range">RANGE:</span>
+frontend\templates\admin_dashboard.html:611: <button class="pill-btn" onclick="setRange('today', this)" data-i18n="admin.today">Today</button>
+frontend\templates\admin_dashboard.html:612: <button class="pill-btn" onclick="setRange('7d', this)" data-i18n="admin.7d">7 Days</button>
+frontend\templates\admin_dashboard.html:613: <button class="pill-btn active" onclick="setRange('30d', this)" data-i18n="admin.30d">30 Days</button>
+frontend\templates\admin_dashboard.html:614: <button class="pill-btn" onclick="setRange('90d', this)" data-i18n="admin.90d">90 Days</button>
+frontend\templates\admin_dashboard.html:615: <button class="pill-btn" onclick="setRange('all', this)" data-i18n="admin.all_time">All Time</button>
+frontend\templates\admin_dashboard.html:616: <button class="pill-btn" onclick="toggleCustomDates(this)" data-i18n="admin.custom">Custom</button>
+frontend\templates\admin_dashboard.html:627: <span id="lastUpdated" style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;" data-i18n="admin.updated">Updated: Just now</span>
+frontend\templates\admin_dashboard.html:628: <button onclick="fetchDashboardData(true)" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="filter.refresh">Refresh</span></button>
+frontend\templates\admin_dashboard.html:630: <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh(this)"> <span data-i18n="admin.auto_refresh">Auto (60s)</span>
+frontend\templates\admin_dashboard.html:632: <button onclick="exportAllCSV()" class="btn-action btn-export"><i class="fa-solid fa-file-csv"></i> <span data-i18n="admin.export_all">Export All (CSV)</span></button>
+frontend\templates\admin_dashboard.html:640: <button class="tab-btn active" onclick="switchTab('overview', this)"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="admin.tab_overview">Overview</span></button>
+frontend\templates\admin_dashboard.html:641: <button class="tab-btn" onclick="switchTab('orders-rev', this)"><i class="fa-solid fa-chart-line"></i> <span data-i18n="admin.tab_orders_rev">Orders & Revenue</span></button>
+frontend\templates\admin_dashboard.html:642: <button class="tab-btn" onclick="switchTab('farmers', this)"><i class="fa-solid fa-wheat-awn"></i> <span data-i18n="admin.tab_farmers">Farmers</span></button>
+frontend\templates\admin_dashboard.html:643: <button class="tab-btn" onclick="switchTab('consumers', this)"><i class="fa-solid fa-users"></i> <span data-i18n="admin.tab_consumers">Consumers</span></button>
+frontend\templates\admin_dashboard.html:644: <button class="tab-btn" onclick="switchTab('products-inv', this)"><i class="fa-solid fa-boxes-stacked"></i> <span data-i18n="admin.tab_products_inv">Products & Stock</span></button>
+frontend\templates\admin_dashboard.html:645: <button class="tab-btn" onclick="switchTab('geography', this)"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="admin.tab_geography">Geography & Timing</span></button>
+frontend\templates\admin_dashboard.html:646: <button class="tab-btn" onclick="switchTab('growth-pay', this)"><i class="fa-solid fa-credit-card"></i> <span data-i18n="admin.tab_growth_pay">Growth & Payments</span></button>
+frontend\templates\admin_dashboard.html:647: <button class="tab-btn" onclick="switchTab('whatsapp-notifs', this)"><i class="fa-brands fa-whatsapp"></i> <span data-i18n="admin.tab_whatsapp">WhatsApp Notifications</span></button>
+frontend\templates\admin_dashboard.html:648: <button class="tab-btn" onclick="switchTab('moderation', this)"><i class="fa-solid fa-shield-halved"></i> <span data-i18n="admin.tab_moderation">Content Moderation</span> <span id="moderationBadge" style="background:#ef4444; color:white; font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:12px; display:none; margin-left:0.3rem;">0</span></button>
+frontend\templates\admin_dashboard.html:659: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.total_orders">Total Orders</span><div class="kpi-icon"><i class="fa-solid fa-shopping-basket"></i></div></div>
+frontend\templates\admin_dashboard.html:665: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.total_revenue">Total Revenue</span><div class="kpi-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+frontend\templates\admin_dashboard.html:671: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.avg_order_value">Avg Order Value</span><div class="kpi-icon"><i class="fa-solid fa-calculator"></i></div></div>
+frontend\templates\admin_dashboard.html:677: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.pending_orders">Pending Orders</span><div class="kpi-icon"><i class="fa-solid fa-clock"></i></div></div>
+frontend\templates\admin_dashboard.html:683: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.confirmed_orders">Confirmed Orders</span><div class="kpi-icon"><i class="fa-solid fa-check-circle"></i></div></div>
+frontend\templates\admin_dashboard.html:689: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.delivered_orders">Delivered Orders</span><div class="kpi-icon"><i class="fa-solid fa-truck"></i></div></div>
+frontend\templates\admin_dashboard.html:695: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.active_farmers">Active Farmers</span><div class="kpi-icon"><i class="fa-solid fa-tractor"></i></div></div>
+frontend\templates\admin_dashboard.html:701: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.total_consumers">Total Consumers</span><div class="kpi-icon"><i class="fa-solid fa-user-group"></i></div></div>
+frontend\templates\admin_dashboard.html:707: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.conf_rate">Confirmation Rate</span><div class="kpi-icon"><i class="fa-solid fa-thumbs-up"></i></div></div>
+frontend\templates\admin_dashboard.html:713: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.canc_rate">Cancellation Rate</span><div class="kpi-icon"><i class="fa-solid fa-ban"></i></div></div>
+frontend\templates\admin_dashboard.html:719: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.repeat_rate">Repeat Customer %</span><div class="kpi-icon"><i class="fa-solid fa-rotate-left"></i></div></div>
+frontend\templates\admin_dashboard.html:725: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.pay_rate">Payment Success %</span><div class="kpi-icon"><i class="fa-solid fa-shield-check"></i></div></div>
+frontend\templates\admin_dashboard.html:737: <div class="chart-title"><i class="fa-solid fa-chart-area"></i> <span data-i18n="admin.chart_orders_rev">Orders & Revenue Over Time</span></div>
+frontend\templates\admin_dashboard.html:748: <div class="chart-title"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="admin.chart_order_status">Order Status Breakdown</span></div>
+frontend\templates\admin_dashboard.html:761: <div class="chart-title"><i class="fa-solid fa-filter"></i> <span data-i18n="admin.chart_funnel">Fulfillment Funnel Drop-off</span></div>
+frontend\templates\admin_dashboard.html:771: <div class="chart-title"><i class="fa-solid fa-cart-arrow-down"></i> <span data-i18n="admin.abandoned_orders">Abandoned Orders Summary</span></div>
+frontend\templates\admin_dashboard.html:777: <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong data-i18n="admin.unpaid_abandoned">Unpaid Abandoned Orders:</strong> <span id="abandonedCount">0</span></p>
+frontend\templates\admin_dashboard.html:778: <p style="font-size: 0.9rem; margin-bottom: 1rem;"><strong data-i18n="admin.potential_lost">Potential Revenue Lost:</strong> <span id="abandonedRevenue" style="color: var(--danger); font-weight: 700;">₹0</span></p>
+frontend\templates\admin_dashboard.html:782: <thead><tr><th data-i18n="orders.col_id">Order ID</th><th data-i18n="admin.col_customer">Customer</th><th data-i18n="orders.col_customer">Phone</th><th data-i18n="orders.col_amount">Amount</th><th data-i18n="orders.col_date">Date</th></tr></thead>
+frontend\templates\admin_dashboard.html:795: <div class="chart-title"><i class="fa-solid fa-chart-column"></i> <span data-i18n="admin.chart_farmer_perf">Orders Received vs Confirmed per Farmer</span></div>
+frontend\templates\admin_dashboard.html:806: <div class="chart-title"><i class="fa-solid fa-clock"></i> <span data-i18n="admin.chart_response_time">Response Time Distribution</span></div>
+frontend\templates\admin_dashboard.html:817: <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-trophy"></i> <span data-i18n="admin.leaderboard_title">Farmer Performance Leaderboard</span></h3>
+frontend\templates\admin_dashboard.html:820: <tr><th data-i18n="admin.col_farmer_name">Farmer Name</th><th data-i18n="admin.col_location">Location</th><th data-i18n="admin.col_products">Products</th><th data-i18n="admin.col_orders_received">Orders Received</th><th data-i18n="admin.col_confirmed">Confirmed</th><th data-i18n="admin.col_rejected">Rejected</th><th data-i18n="admin.col_confirmation_pct">Confirmation %</th><th data-i18n="admin.col_avg_response">Avg Response (hrs)</th><th data-i18n="admin.total_revenue">Total Revenue</th></tr>
+frontend\templates\admin_dashboard.html:829: <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="admin.inactive_farmers_alert">Inactive Farmers Alert (30+ Days)</span></h3>
+frontend\templates\admin_dashboard.html:832: <tr><th data-i18n="admin.col_farmer_name">Farmer Name</th><th data-i18n="admin.col_location">Location</th><th data-i18n="admin.col_last_listing">Last Listing Date</th><th data-i18n="admin.col_last_confirmation">Last Confirmation Date</th></tr>
+frontend\templates\admin_dashboard.html:896: <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--danger);"><i class="fa-solid fa-box-open"></i> <span data-i18n="admin.low_stock_alerts">Low-Stock & Out-of-Stock Alerts</span></h3>
+frontend\templates\admin_dashboard.html:898: <thead><tr><th data-i18n="admin.col_product">Product</th><th data-i18n="admin.col_farmer_name">Farmer</th><th data-i18n="add_product.category_label">Category</th><th data-i18n="admin.col_stock_left">Stock Left</th></tr></thead>
+frontend\templates\admin_dashboard.html:904: <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--warning);"><i class="fa-solid fa-skull"></i> <span data-i18n="admin.dead_stock_title">Dead Stock (No orders in 30 days)</span></h3>
+frontend\templates\admin_dashboard.html:906: <thead><tr><th data-i18n="admin.col_product">Product</th><th data-i18n="admin.col_farmer_name">Farmer</th><th data-i18n="admin.col_listed_date">Listed Date</th><th data-i18n="admin.col_current_stock">Current Stock</th></tr></thead>
+frontend\templates\admin_dashboard.html:918: <div class="chart-title"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="admin.chart_location_sales">Sales & Orders by Location</span></div>
+frontend\templates\admin_dashboard.html:926: <div class="chart-title"><i class="fa-solid fa-calendar-day"></i> <span data-i18n="admin.chart_weekday_orders">Orders by Weekday & Hour</span></div>
+frontend\templates\admin_dashboard.html:934: <h3 style="margin-bottom: 1rem; font-size: 1.1rem;"><i class="fa-solid fa-fire"></i> <span data-i18n="admin.heatmap_title">Order Heatmap (Weekday x Hour Intensity)</span></h3>
+frontend\templates\admin_dashboard.html:944: <div class="chart-title"><i class="fa-solid fa-user-gear"></i> <span data-i18n="admin.chart_user_growth">Platform User Growth</span></div>
+frontend\templates\admin_dashboard.html:952: <div class="chart-title"><i class="fa-solid fa-wallet"></i> <span data-i18n="admin.chart_payment_methods">Payment Methods Split</span></div>
+frontend\templates\admin_dashboard.html:964: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.notif_total_logs">Total Logs</span><div class="kpi-icon" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></div></div>
+frontend\templates\admin_dashboard.html:969: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.notif_real_sent">Real Sent</span><div class="kpi-icon" style="color: #059669;"><i class="fa-solid fa-paper-plane"></i></div></div>
+frontend\templates\admin_dashboard.html:974: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.notif_simulated">Simulated</span><div class="kpi-icon" style="color: #0284c7;"><i class="fa-solid fa-vial"></i></div></div>
+frontend\templates\admin_dashboard.html:979: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.notif_inbound">Inbound Replies</span><div class="kpi-icon" style="color: #7c3aed;"><i class="fa-solid fa-reply"></i></div></div>
+frontend\templates\admin_dashboard.html:984: <div class="kpi-header"><span class="kpi-title" data-i18n="admin.notif_delivery_rate">Delivery Rate</span><div class="kpi-icon" style="color: #059669;"><i class="fa-solid fa-circle-check"></i></div></div>
+frontend\templates\admin_dashboard.html:993: <div class="chart-title"><i class="fa-solid fa-chart-area"></i> <span data-i18n="admin.chart_notif_daily">Daily WhatsApp Notification Volume</span></div>
+frontend\templates\admin_dashboard.html:995: <button onclick="sendTestEmailAdmin()" class="btn-action" style="background: #059669; color: white; border: none;"><i class="fa-solid fa-paper-plane"></i> <span data-i18n="admin.send_test_email">Send Test Email</span></button>
+frontend\templates\admin_dashboard.html:996: <button onclick="fetchNotificationLogs()" class="btn-action"><i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="admin.refresh_logs">Refresh Logs</span></button>
+frontend\templates\admin_dashboard.html:1005: <div class="table-title"><i class="fa-solid fa-list-check"></i> <span data-i18n="admin.notif_logs_title">WhatsApp Notification Logs & Inbound Replies</span></div>
+frontend\templates\admin_dashboard.html:1008: <option value="" data-i18n="admin.opt_all_statuses">All Statuses</option>
+frontend\templates\admin_dashboard.html:1009: <option value="sent" data-i18n="admin.opt_sent">Sent</option>
+frontend\templates\admin_dashboard.html:1010: <option value="simulated" data-i18n="admin.opt_simulated">Simulated</option>
+frontend\templates\admin_dashboard.html:1011: <option value="failed" data-i18n="admin.opt_failed">Failed</option>
+frontend\templates\admin_dashboard.html:1012: <option value="received" data-i18n="admin.opt_received">Received (Inbound)</option>
+frontend\templates\admin_dashboard.html:1015: <option value="" data-i18n="admin.opt_all_events">All Event Types</option>
+frontend\templates\admin_dashboard.html:1032: <th data-i18n="admin.col_id">ID</th>
+frontend\templates\admin_dashboard.html:1033: <th data-i18n="admin.col_user">User</th>
+frontend\templates\admin_dashboard.html:1034: <th data-i18n="admin.col_event_type">Event Type</th>
+frontend\templates\admin_dashboard.html:1035: <th data-i18n="admin.col_message">Message</th>
+frontend\templates\admin_dashboard.html:1036: <th data-i18n="admin.col_channel">Channel</th>
+frontend\templates\admin_dashboard.html:1037: <th data-i18n="orders.col_status">Status</th>
+frontend\templates\admin_dashboard.html:1038: <th data-i18n="admin.col_sid_error">SID / Error</th>
+frontend\templates\admin_dashboard.html:1039: <th data-i18n="admin.col_created_at">Created At</th>
+frontend\templates\admin_dashboard.html:1054: <h2><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> <span data-i18n="admin.mod_queue_title">Produce Content Moderation Queue</span></h2>
+frontend\templates\admin_dashboard.html:1055: <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="admin.mod_queue_subtitle">Review AI-flagged or pending produce listings before they appear on the public marketplace.</p>
+frontend\templates\admin_dashboard.html:1058: <button onclick="fetchModerationQueue('needs_review')" class="btn-action" style="background: #fef3c7; color: #b45309;"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="admin.mod_needs_review">Needs Review</span></button>
+frontend\templates\admin_dashboard.html:1059: <button onclick="fetchModerationQueue('rejected')" class="btn-action" style="background: #fee2e2; color: #b91c1c;"><i class="fa-solid fa-xmark"></i> <span data-i18n="admin.mod_rejected">Rejected</span></button>
+frontend\templates\admin_dashboard.html:1060: <button onclick="fetchModerationQueue('')" class="btn-action" style="background: var(--primary-light); color: var(--primary-hover);"><i class="fa-solid fa-list"></i> <span data-i18n="admin.mod_all_queue">All Queue</span></button>
+frontend\templates\index.html:18: <script src="/static/js/i18n.js"></script>
+frontend\templates\index.html:718: <li><span class="nav-link active" onclick="filterProducts('all')" data-i18n="nav.explore_market">Explore Market</span></li>
+frontend\templates\index.html:719: <li><span class="nav-link" onclick="openAddProductModal()"><i class="fa-solid fa-plus-circle"></i> <span data-i18n="nav.add_produce">Add Produce</span></span></li>
+frontend\templates\index.html:720: <li><span class="nav-link" onclick="openOrdersModal()"><i class="fa-solid fa-receipt"></i> <span data-i18n="nav.orders">Orders</span></span></li>
+frontend\templates\index.html:721: <li><span class="nav-link" onclick="openApiDocsModal()"><i class="fa-solid fa-code"></i> <span data-i18n="nav.api_docs">API Docs</span></span></li>
+frontend\templates\index.html:726: <button id="lang-btn-en" onclick="window.i18n.setLanguage('en')" style="background: none; border: none; padding: 4px 10px; border-radius: 9999px; cursor: pointer; color: var(--text-main); font-weight: 600; transition: all 0.2s;" class="active-lang">EN</button>
+frontend\templates\index.html:728: <button id="lang-btn-kn" onclick="window.i18n.setLanguage('kn')" style="background: none; border: none; padding: 4px 10px; border-radius: 9999px; cursor: pointer; color: var(--text-main); font-weight: 600; transition: all 0.2s;">ಕನ್ನಡ</button>
+frontend\templates\index.html:741: <i class="fa-solid fa-shield-halved"></i> <span data-i18n="hero.badge">100% Direct Farm Fresh & Fair Trade</span>
+frontend\templates\index.html:743: <h1 data-i18n="hero.title">Fresh Farm Produce Delivered Direct to You</h1>
+frontend\templates\index.html:744: <p data-i18n="hero.subtitle">Connecting local farmers directly with consumers — lowering costs, guaranteeing fresh quality, and supporting agricultural communities.</p>
+frontend\templates\index.html:748: <input type="text" id="searchInput" class="search-input" placeholder="Search tomatoes, carrots, honey, eggs, organic apples..." data-i18n-placeholder="hero.search_placeholder" onkeyup="handleSearch(event)">
+frontend\templates\index.html:749: <button class="search-btn" onclick="executeSearch()" data-i18n="hero.search_btn">Search Produce</button>
+frontend\templates\index.html:759: <button class="tab-btn active" id="tab-all" onclick="filterProducts('all')" data-i18n="filter.all">All Produce</button>
+frontend\templates\index.html:760: <button class="tab-btn" id="tab-vegetables" onclick="filterProducts('vegetable')" data-i18n="categories.vegetables">Vegetables</button>
+frontend\templates\index.html:761: <button class="tab-btn" id="tab-fruits" onclick="filterProducts('fruit')" data-i18n="categories.fruits">Fruits</button>
+frontend\templates\index.html:762: <button class="tab-btn" id="tab-dairy" onclick="filterProducts('dairy')" data-i18n="categories.dairy_eggs">Dairy & Eggs</button>
+frontend\templates\index.html:768: <i class="fa-solid fa-rotate"></i> <span data-i18n="filter.refresh">Refresh</span>
+frontend\templates\index.html:784: <span data-i18n="footer.brand">EcoGreen Farmer-to-Consumer</span>
+frontend\templates\index.html:786: <div data-i18n="footer.tagline">
+frontend\templates\index.html:790: <div class="footer-sub" data-i18n="footer.copyright">
+frontend\templates\index.html:804: <h2 id="profileUsername" style="text-align: center; margin-bottom: 0.25rem; color: var(--text-main);" data-i18n="profile.title">User Profile</h2>
+frontend\templates\index.html:811: <span class="profile-label"><i class="fa-solid fa-user" style="width:20px;"></i> <span data-i18n="profile.username">Full Username</span></span>
+frontend\templates\index.html:815: <span class="profile-label"><i class="fa-solid fa-envelope" style="width:20px;"></i> <span data-i18n="profile.email">Email Address</span></span>
+frontend\templates\index.html:819: <span class="profile-label"><i class="fa-solid fa-phone" style="width:20px;"></i> <span data-i18n="profile.phone">Phone Number</span></span>
+frontend\templates\index.html:823: <span class="profile-label"><i class="fa-solid fa-user-tag" style="width:20px;"></i> <span data-i18n="profile.role">Account Role</span></span>
+frontend\templates\index.html:827: <span class="profile-label"><i class="fa-solid fa-circle-check" style="width:20px;"></i> <span data-i18n="profile.status">Status</span></span>
+frontend\templates\index.html:834: <i class="fa-solid fa-receipt"></i> <span data-i18n="profile.view_orders">View My Orders</span>
+frontend\templates\index.html:837: <i class="fa-solid fa-store"></i> <span data-i18n="profile.list_produce">List Produce for Sale</span>
+frontend\templates\index.html:840: <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="profile.sign_out">Sign Out / Logout</span>
+frontend\templates\index.html:851: <i class="fa-solid fa-basket-shopping"></i> <span data-i18n="order.modal_title">Complete Produce Order</span>
+frontend\templates\index.html:853: <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;" data-i18n="order.modal_subtitle">Direct purchase from local verified farmers via Mpesa Express.</p>
+frontend\templates\index.html:873: <label class="form-label" data-i18n="order.quantity">Order Quantity</label>
+frontend\templates\index.html:877: <label class="form-label" data-i18n="order.total_amount">Total Amount</label>
+frontend\templates\index.html:883: <label class="form-label"><i class="fa-solid fa-mobile-screen-button" style="color:#10b981;"></i> <span data-i18n="order.phone_label">Mpesa Phone Number (Payment Prompt)</span></label>
+frontend\templates\index.html:888: <label class="form-label"><i class="fa-solid fa-truck-ramp-box" style="color: var(--primary);"></i> <span data-i18n="order.delivery_location">Delivery Location Capture</span></label>
+frontend\templates\index.html:893: <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal('orderModal')" data-i18n="order.cancel">Cancel</button>
+frontend\templates\index.html:895: <i class="fa-solid fa-credit-card"></i> <span data-i18n="order.pay_confirm">Pay via Razorpay & Confirm</span>
+frontend\templates\index.html:907: <i class="fa-solid fa-seedling"></i> <span data-i18n="add_product.title">List New Farm Produce</span>
+frontend\templates\index.html:909: <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;" data-i18n="add_product.subtitle">Publish your fresh harvest directly for consumers.</p>
+frontend\templates\index.html:912: <i class="fa-solid fa-shield-halved"></i> <span data-i18n="add_product.image_guidance">Image Guidance: Upload a clear photo of your actual produce. Unrelated, inappropriate, or irrelevant images will be rejected by automated moderation.</span>
+frontend\templates\index.html:918: <i class="fa-solid fa-circle-xmark"></i> <span data-i18n="add_product.rejected_title">Produce Listing Rejected</span>
+frontend\templates\index.html:925: <label class="form-label" data-i18n="add_product.name_label">Produce Name</label>
+frontend\templates\index.html:926: <input type="text" id="prodName" class="form-input" placeholder="e.g. Fresh Organic Tomatoes (10kg)" data-i18n-placeholder="add_product.name_placeholder" required>
+frontend\templates\index.html:931: <label class="form-label" data-i18n="add_product.price_label">Price (₹ INR)</label>
+frontend\templates\index.html:935: <label class="form-label" data-i18n="add_product.quantity_label">Stock Quantity</label>
+frontend\templates\index.html:942: <label class="form-label" data-i18n="add_product.category_label">Category</label>
+frontend\templates\index.html:944: <option value="Vegetables" data-i18n="categories.vegetables">Vegetables</option>
+frontend\templates\index.html:945: <option value="Fruits" data-i18n="categories.fruits">Fruits</option>
+frontend\templates\index.html:946: <option value="Dairy & Eggs" data-i18n="categories.dairy_eggs">Dairy & Eggs</option>
+frontend\templates\index.html:947: <option value="Honey" data-i18n="categories.honey">Honey</option>
+frontend\templates\index.html:948: <option value="Grains" data-i18n="categories.grains">Grains</option>
+frontend\templates\index.html:949: <option value="Organic Spices" data-i18n="categories.spices">Organic Spices</option>
+frontend\templates\index.html:950: <option value="Others" data-i18n="categories.others">Others</option>
+frontend\templates\index.html:954: <label class="form-label" data-i18n="add_product.farm_location">Farm Location Capture</label>
+frontend\templates\index.html:960: <label class="form-label" data-i18n="add_product.upload_photo">Upload Photo from Device (Local Storage)</label>
+frontend\templates\index.html:962: <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;" data-i18n="add_product.upload_subtext">Select an image file from your computer or phone.</span>
+frontend\templates\index.html:966: <label class="form-label" data-i18n="add_product.or_image_url">OR Enter Image URL / Use Preset</label>
+frontend\templates\index.html:969: <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;" data-i18n="add_product.quick_presets">Quick Presets:</span>
+frontend\templates\index.html:970: <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500')" data-i18n="presets.tomatoes">Tomatoes</button>
+frontend\templates\index.html:971: <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=500')" data-i18n="presets.carrots">Carrots</button>
+frontend\templates\index.html:972: <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500')" data-i18n="categories.honey">Honey</button>
+frontend\templates\index.html:973: <button type="button" class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="setPresetImage('https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500')" data-i18n="presets.eggs">Eggs</button>
+frontend\templates\index.html:978: <label class="form-label" data-i18n="add_product.desc_label">Produce Description</label>
+frontend\templates\index.html:979: <textarea id="prodDesc" class="form-textarea" rows="3" placeholder="Describe farming methods, freshness, and quality..." data-i18n-placeholder="add_product.desc_placeholder" required></textarea>
+frontend\templates\index.html:983: <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="add_product.publish_btn">Publish Produce Listing</span>
+frontend\templates\index.html:996: <i class="fa-solid fa-clipboard-list"></i> <span data-i18n="orders.title">My Orders Dashboard</span>
+frontend\templates\index.html:998: <p style="color: var(--text-muted); font-size: 0.875rem;" data-i18n="orders.subtitle">Private order history for your account.</p>
+frontend\templates\index.html:1006: <th data-i18n="orders.col_id">Order ID</th>
+frontend\templates\index.html:1007: <th data-i18n="orders.col_produce">Produce</th>
+frontend\templates\index.html:1008: <th data-i18n="orders.col_customer">Customer / Phone</th>
+frontend\templates\index.html:1009: <th data-i18n="orders.col_amount">Amount</th>
+frontend\templates\index.html:1010: <th data-i18n="orders.col_date">Date</th>
+frontend\templates\index.html:1011: <th data-i18n="orders.col_status">Status</th>
+frontend\templates\index.html:1012: <th data-i18n="orders.col_action">Action</th>
+frontend\templates\index.html:1027: <h2 id="authTitle" style="margin-bottom: 0.5rem; color: var(--primary);" data-i18n="auth.login_title">User Login</h2>
+frontend\templates\index.html:1028: <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;" data-i18n="auth.login_subtitle">Access your farmer or consumer profile.</p>
+frontend\templates\index.html:1034: <label class="form-label" data-i18n="auth.username">Username</label>
+frontend\templates\index.html:1039: <label class="form-label" data-i18n="auth.password">Password</label>
+frontend\templates\index.html:1045: <label class="form-label" data-i18n="auth.email">Email Address</label>
+frontend\templates\index.html:1049: <label class="form-label" data-i18n="auth.phone">Phone Number</label>
+frontend\templates\index.html:1053: <label class="form-label" data-i18n="auth.account_type">Account Type</label>
+frontend\templates\index.html:1055: <option value="farmer" data-i18n="auth.farmer_role">Farmer (Seller)</option>
+frontend\templates\index.html:1056: <option value="consumer" selected data-i18n="auth.consumer_role">Consumer (Buyer)</option>
+frontend\templates\index.html:1061: <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="authSubmitBtn" data-i18n="auth.sign_in_btn">
+frontend\templates\index.html:1066: <span id="authToggleText" data-i18n="auth.no_account">Don't have an account?</span>
+frontend\templates\index.html:1067: <a href="javascript:void(0)" onclick="toggleAuthMode()" style="color: var(--primary); font-weight: 600; text-decoration: none;" id="authToggleBtn" data-i18n="auth.register_now">Register Now</a>
+frontend\templates\index.html:1078: <i class="fa-solid fa-network-wired"></i> <span data-i18n="api_docs.title">REST API Documentation</span>
+frontend\templates\index.html:1080: <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;" data-i18n="api_docs.subtitle">Backend endpoints provided by Flask API.</p>
+frontend\templates\index.html:1086: <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="api_docs.get_products">Fetch paginated list of all products with reviews</div>
+frontend\templates\index.html:1093: <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="api_docs.post_products">Create a new farm product listing</div>
+frontend\templates\index.html:1100: <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="api_docs.get_orders">Get all placed customer orders</div>
+frontend\templates\index.html:1107: <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="api_docs.post_login">Authenticate user and issue JWT access token</div>
+frontend\templates\index.html:1114: <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="api_docs.post_pay">Trigger Mpesa Express STK Push payment</div>
+frontend\templates\index.html:1127: <i class="fa-solid fa-chart-pie"></i> <span data-i18n="analytics_modal.title">Admin Analytics & Power BI Dashboard</span>
+frontend\templates\index.html:1130: <i class="fa-solid fa-shield-halved"></i> <span data-i18n="analytics_modal.owner_access">Platform Owner Access</span>
+frontend\templates\index.html:1137: <div style="font-size: 0.8rem; color: #166534; font-weight: 600;" data-i18n="admin.total_revenue">Total Revenue</div>
+frontend\templates\index.html:1141: <div style="font-size: 0.8rem; color: #1e40af; font-weight: 600;" data-i18n="admin.total_orders">Total Orders</div>
+frontend\templates\index.html:1145: <div style="font-size: 0.8rem; color: #92400e; font-weight: 600;" data-i18n="analytics_modal.paid_unpaid">Paid / Unpaid</div>
+frontend\templates\index.html:1149: <div style="font-size: 0.8rem; color: #6b21a8; font-weight: 600;" data-i18n="analytics_modal.farmers_buyers">Farmers & Buyers</div>
+frontend\templates\index.html:1158: <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i> <span data-i18n="analytics_modal.top_farmers">Top Farmers by Sales</span>
+frontend\templates\index.html:1164: <i class="fa-solid fa-leaf" style="color: var(--primary);"></i> <span data-i18n="analytics_modal.sales_by_category">Produce Sales by Category</span>
+frontend\templates\index.html:1173: <i class="fa-solid fa-plug"></i> <span data-i18n="analytics_modal.power_bi_endpoints">Direct Power BI Connection Endpoints (Basic Auth)</span>
+frontend\templates\index.html:1177: <i class="fa-solid fa-copy"></i> <span data-i18n="analytics_modal.summary_kpis_url">Summary KPIs REST URL</span>
+frontend\templates\index.html:1180: <i class="fa-solid fa-copy"></i> <span data-i18n="analytics_modal.sales_over_time_url">Sales Over Time URL</span>
+frontend\templates\index.html:1183: <i class="fa-solid fa-copy"></i> <span data-i18n="analytics_modal.top_farmers_url">Top Farmers URL</span>
+frontend\templates\admin\analytics_dashboard.html:7: <h2><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> <span data-i18n="admin.analytics_title">Admin Executive Analytics & Multi-Channel Outbox</span></h2>
+frontend\templates\admin\analytics_dashboard.html:8: <p data-i18n="admin.analytics_sub">View revenue, user growth, order status trends, and WhatsApp/Email dispatch logs.</p>
+frontend\templates\auth\login.html:7: <h2 style="margin-bottom: 1.5rem; text-align: center; color: #065f46;"><i class="fa-solid fa-leaf"></i> <span data-i18n="auth.login_title">Welcome Back</span></h2>
+frontend\templates\auth\login.html:10: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.username">Username</label>
+frontend\templates\auth\login.html:14: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.password">Password</label>
+frontend\templates\auth\login.html:17: <button type="submit" class="btn btn-primary" style="width: 100%;" data-i18n="auth.sign_in_btn">Log In</button>
+frontend\templates\auth\register.html:7: <h2 style="margin-bottom: 1.5rem; text-align: center; color: #065f46;"><i class="fa-solid fa-user-plus"></i> <span data-i18n="auth.register_title">Join EcoGreen</span></h2>
+frontend\templates\auth\register.html:10: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.username">Username</label>
+frontend\templates\auth\register.html:14: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.email">Email</label>
+frontend\templates\auth\register.html:18: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.phone">Phone Number</label>
+frontend\templates\auth\register.html:22: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.account_type">Account Type</label>
+frontend\templates\auth\register.html:24: <option value="consumer" data-i18n="auth.consumer_role">Consumer</option>
+frontend\templates\auth\register.html:25: <option value="farmer" data-i18n="auth.farmer_role">Farmer</option>
+frontend\templates\auth\register.html:29: <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;" data-i18n="auth.password">Password</label>
+frontend\templates\auth\register.html:32: <button type="submit" class="btn btn-primary" style="width: 100%;" data-i18n="auth.register_btn">Create Account</button>
+frontend\templates\consumer\marketplace.html:7: <h2><i class="fa-solid fa-store" style="color: var(--primary);"></i> <span data-i18n="nav.explore_market">Fresh Farm Produce Marketplace</span></h2>
+frontend\templates\farmer\dashboard.html:8: <h2><i class="fa-solid fa-tractor" style="color: var(--primary);"></i> <span data-i18n="farmer.management">Farmer Produce Management</span></h2>
+frontend\templates\farmer\dashboard.html:9: <button onclick="openAddProductModal()" class="btn btn-primary"><i class="fa-solid fa-plus"></i> <span data-i18n="farmer.add_new">Add New Produce</span></button>
+frontend\templates\shared\base.html:31: <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+frontend\templates\shared\footer.html:5: <p style="font-size: 0.9rem; line-height: 1.6;" data-i18n="footer.tagline">Direct Farmer-to-Consumer platform eliminating middlemen, ensuring fair pricing for farmers and farm-fresh quality produce for consumers.</p>
+frontend\templates\shared\footer.html:8: <h4 style="color: white; margin-bottom: 1rem;" data-i18n="footer.quick_links">Quick Links</h4>
+frontend\templates\shared\footer.html:10: <li><a href="/" style="color: #94a3b8; text-decoration: none;" data-i18n="nav.marketplace">Marketplace</a></li>
+frontend\templates\shared\footer.html:11: <li><a href="/admin/dashboard" style="color: #94a3b8; text-decoration: none;" data-i18n="nav.admin_bi">Admin BI Analytics</a></li>
+frontend\templates\shared\footer.html:15: <h4 style="color: white; margin-bottom: 1rem;" data-i18n="footer.tech_info">Channels & Tech</h4>
+frontend\templates\shared\footer.html:16: <p style="font-size: 0.85rem; line-height: 1.6;" data-i18n="footer.tech_info_desc">Integrated with Razorpay Payments, Meta WhatsApp Cloud API, and Brevo SMTP Email Relay.</p>
+frontend\templates\shared\footer.html:19: <div style="max-width: 1280px; margin: 0 auto; text-align: center; font-size: 0.85rem; border-top: 1px solid #334155; padding-top: 1.5rem;" data-i18n="footer.rights">
+frontend\templates\shared\navbar.html:9: <input type="text" id="global-search-input" data-i18n-placeholder="nav.search_placeholder" placeholder="Search fresh produce..." style="width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border-radius: 9999px; border: 1px solid var(--border-color); font-size: 0.9rem; outline: none; background: #f8fafc;">
+frontend\templates\shared\navbar.html:14: <li><a href="/" class="nav-link" data-i18n="nav.marketplace"><i class="fa-solid fa-store"></i> Marketplace</a></li>
+frontend\templates\shared\navbar.html:15: <li id="nav-farmer-link" style="display: none;"><a href="#farmer-section" class="nav-link" data-i18n="nav.farmer_dashboard"><i class="fa-solid fa-tractor"></i> Farmer Dashboard</a></li>
+frontend\templates\shared\navbar.html:16: <li id="nav-orders-link" style="display: none;"><a href="#my-orders-section" class="nav-link" data-i18n="nav.my_orders"><i class="fa-solid fa-bag-shopping"></i> My Orders</a></li>
+frontend\templates\shared\navbar.html:17: <li id="nav-admin-link" style="display: none;"><a href="/admin/dashboard" class="nav-link" data-i18n="nav.admin_bi"><i class="fa-solid fa-chart-line"></i> Admin BI</a></li>
+frontend\templates\shared\navbar.html:22: <button onclick="setLanguage('kn')" class="lang-btn" data-lang="kn" style="border: none; background: transparent; padding: 4px 10px; border-radius: 16px; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-main);">ಕನ್ನಡ</button>
+frontend\templates\shared\navbar.html:33: <h4 style="font-size: 0.9rem; font-weight: 700;" data-i18n="nav.notifications">Notifications</h4>
+frontend\templates\shared\navbar.html:34: <button onclick="markAllNotificationsRead()" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: 600;" data-i18n="nav.mark_all_read">Mark all as read</button>
+frontend\templates\shared\navbar.html:37: <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem;" data-i18n="nav.no_notifications">No notifications</p>
+frontend\templates\shared\navbar.html:43: <button onclick="openAuthModal('login')" class="btn btn-secondary btn-sm" data-i18n="nav.login">Log In</button>
+frontend\templates\shared\navbar.html:44: <button onclick="openAuthModal('register')" class="btn btn-primary btn-sm" data-i18n="nav.register">Register</button>

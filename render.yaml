@@ -2,17 +2,26 @@ services:
   - type: web
     name: ecogreen-farm
     env: python
+    plan: free
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --timeout 120 --workers 1 run:app
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
+      - key: FLASK_ENV
+        value: production
       - key: MODERATION_MODE
-        value: gemini
+        value: simulate
+      - key: NOTIFY_MODE
+        value: simulate
+      - key: EMAIL_NOTIFY_MODE
+        value: simulate
+      - key: RAZORPAY_SIMULATE
+        value: "true"
+      - key: DISABLE_SCHEDULER
+        value: "1"
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-3.5-flash-lite
+        value: gemini-2.0-flash
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY

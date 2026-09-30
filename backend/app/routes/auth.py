@@ -126,8 +126,7 @@ def view_all_user():
             'phone number': user.phone_number,
             'email': user.email,
             'user_type': user.user_type,
-            'status': user.status,
-            'password': user.password
+            'status': user.status
         }
         user_list.append(user_data)
 
@@ -135,3 +134,4 @@ def view_all_user():
         'status': 'success',
         'data': user_list
     })
+

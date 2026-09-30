@@ -14,6 +14,8 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- EcoGreen Location Capture Module -->
     <script src="/static/js/location-capture.js"></script>
+    <!-- EcoGreen Translation Engine -->
+    
     
     <style>
         :root {
@@ -713,13 +715,15 @@
 
             <ul class="nav-links">
                 <li><span class="nav-link active" onclick="filterProducts('all')">Explore Market</span></li>
-                <li><span class="nav-link" onclick="openAddProductModal()"><i class="fa-solid fa-plus-circle"></i> Add Produce</span></li>
-                <li><span class="nav-link" onclick="openOrdersModal()"><i class="fa-solid fa-receipt"></i> Orders</span></li>
-                <li><span class="nav-link" onclick="openApiDocsModal()"><i class="fa-solid fa-code"></i> API Docs</span></li>
+                <li><span class="nav-link" onclick="openAddProductModal()"><i class="fa-solid fa-plus-circle"></i> <span>Add Produce</span></span></li>
+                <li><span class="nav-link" onclick="openOrdersModal()"><i class="fa-solid fa-receipt"></i> <span>Orders</span></span></li>
+                <li><span class="nav-link" onclick="openApiDocsModal()"><i class="fa-solid fa-code"></i> <span>API Docs</span></span></li>
             </ul>
 
-            <div id="navAuthContainer" style="display: flex; gap: 0.75rem; align-items: center;">
-                <!-- Dynamically updated by JavaScript (Login or Profile Badge) -->
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div id="navAuthContainer" style="display: flex; gap: 0.75rem; align-items: center;">
+                    <!-- Dynamically updated by JavaScript (Login or Profile Badge) -->
+                </div>
             </div>
         </div>
     </header>
@@ -728,7 +732,7 @@
     <section class="hero">
         <div class="hero-content">
             <div class="hero-badge">
-                <i class="fa-solid fa-shield-halved"></i> 100% Direct Farm Fresh & Fair Trade
+                <i class="fa-solid fa-shield-halved"></i> <span>100% Direct Farm Fresh & Fair Trade</span>
             </div>
             <h1>Fresh Farm Produce Delivered Direct to You</h1>
             <p>Connecting local farmers directly with consumers — lowering costs, guaranteeing fresh quality, and supporting agricultural communities.</p>
@@ -753,9 +757,9 @@
             </div>
             
             <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">
-                <span>Showing: <strong id="productCount" style="color: var(--text-main);">0</strong> items</span>
+                <span id="showingCountWrapper">Showing: <strong id="productCount" style="color: var(--text-main);">0</strong> items</span>
                 <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="loadProducts()">
-                    <i class="fa-solid fa-rotate"></i> Refresh
+                    <i class="fa-solid fa-rotate"></i> <span>Refresh</span>
                 </button>
             </div>
         </div>
@@ -771,7 +775,7 @@
         <div class="footer-content">
             <div class="footer-logo">
                 <i class="fa-solid fa-wheat-awn" style="color: var(--secondary);"></i>
-                EcoGreen Farmer-to-Consumer
+                <span>EcoGreen Farmer-to-Consumer</span>
             </div>
             <div>
                 Direct-to-Consumer Agricultural Commerce Platform
@@ -798,36 +802,36 @@
 
             <div class="profile-info-grid">
                 <div class="profile-info-row">
-                    <span class="profile-label"><i class="fa-solid fa-user" style="width:20px;"></i> Full Username</span>
+                    <span class="profile-label"><i class="fa-solid fa-user" style="width:20px;"></i> <span>Full Username</span></span>
                     <span class="profile-value" id="profileFullUsername">---</span>
                 </div>
                 <div class="profile-info-row">
-                    <span class="profile-label"><i class="fa-solid fa-envelope" style="width:20px;"></i> Email Address</span>
+                    <span class="profile-label"><i class="fa-solid fa-envelope" style="width:20px;"></i> <span>Email Address</span></span>
                     <span class="profile-value" id="profileEmail">---</span>
                 </div>
                 <div class="profile-info-row">
-                    <span class="profile-label"><i class="fa-solid fa-phone" style="width:20px;"></i> Phone Number</span>
+                    <span class="profile-label"><i class="fa-solid fa-phone" style="width:20px;"></i> <span>Phone Number</span></span>
                     <span class="profile-value" id="profilePhone">---</span>
                 </div>
                 <div class="profile-info-row">
-                    <span class="profile-label"><i class="fa-solid fa-user-tag" style="width:20px;"></i> Account Role</span>
+                    <span class="profile-label"><i class="fa-solid fa-user-tag" style="width:20px;"></i> <span>Account Role</span></span>
                     <span class="profile-value" id="profileRole">---</span>
                 </div>
                 <div class="profile-info-row">
-                    <span class="profile-label"><i class="fa-solid fa-circle-check" style="width:20px;"></i> Status</span>
+                    <span class="profile-label"><i class="fa-solid fa-circle-check" style="width:20px;"></i> <span>Status</span></span>
                     <span class="profile-value" style="color: var(--primary);" id="profileStatus">Active</span>
                 </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="closeModal('profileModal'); openOrdersModal();">
-                    <i class="fa-solid fa-receipt"></i> View My Orders
+                    <i class="fa-solid fa-receipt"></i> <span>View My Orders</span>
                 </button>
                 <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="closeModal('profileModal'); openAddProductModal();">
-                    <i class="fa-solid fa-store"></i> List Produce for Sale
+                    <i class="fa-solid fa-store"></i> <span>List Produce for Sale</span>
                 </button>
                 <button class="btn btn-outline" style="width: 100%; justify-content: center; border-color: #ef4444; color: #ef4444;" onclick="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out / Logout
+                    <i class="fa-solid fa-right-from-bracket"></i> <span>Sign Out / Logout</span>
                 </button>
             </div>
         </div>
@@ -838,7 +842,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="closeModal('orderModal')"><i class="fa-solid fa-xmark"></i></button>
             <h2 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--primary);">
-                <i class="fa-solid fa-basket-shopping"></i> Complete Produce Order
+                <i class="fa-solid fa-basket-shopping"></i> <span>Complete Produce Order</span>
             </h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Direct purchase from local verified farmers via Mpesa Express.</p>
 
@@ -870,19 +874,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label"><i class="fa-solid fa-mobile-screen-button" style="color:#10b981;"></i> Mpesa Phone Number (Payment Prompt)</label>
+                    <label class="form-label"><i class="fa-solid fa-mobile-screen-button" style="color:#10b981;"></i> <span>Mpesa Phone Number (Payment Prompt)</span></label>
                     <input type="tel" id="orderPhone" class="form-input" placeholder="254712345678" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label"><i class="fa-solid fa-truck-ramp-box" style="color: var(--primary);"></i> Delivery Location Capture</label>
+                    <label class="form-label"><i class="fa-solid fa-truck-ramp-box" style="color: var(--primary);"></i> <span>Delivery Location Capture</span></label>
                     <div id="orderLocationWidget"></div>
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
                     <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal('orderModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 2;">
-                        <i class="fa-solid fa-credit-card"></i> Pay via Razorpay & Confirm
+                        <i class="fa-solid fa-credit-card"></i> <span>Pay via Razorpay & Confirm</span>
                     </button>
                 </div>
             </form>
@@ -894,18 +898,18 @@
         <div class="modal-card">
             <button class="modal-close" onclick="closeModal('addProductModal')"><i class="fa-solid fa-xmark"></i></button>
             <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-seedling"></i> List New Farm Produce
+                <i class="fa-solid fa-seedling"></i> <span>List New Farm Produce</span>
             </h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Publish your fresh harvest directly for consumers.</p>
 
             <div style="background: #ecfdf5; border-left: 4px solid var(--primary); padding: 0.75rem; border-radius: 8px; font-size: 0.82rem; color: #065f46; margin-bottom: 1.25rem;">
-                <i class="fa-solid fa-shield-halved"></i> <strong>Image Guidance:</strong> Upload a clear photo of your actual produce. Unrelated, inappropriate, or irrelevant images will be rejected by automated moderation.
+                <i class="fa-solid fa-shield-halved"></i> <span>Image Guidance: Upload a clear photo of your actual produce. Unrelated, inappropriate, or irrelevant images will be rejected by automated moderation.</span>
             </div>
 
             <!-- Inline Red Alert Box for Moderation Rejections -->
             <div id="prodModerationAlert" style="display: none; background: #fef2f2; border-left: 4px solid #ef4444; padding: 0.85rem; border-radius: 8px; margin-bottom: 1.25rem;">
                 <div style="font-weight: 700; color: #991b1b; font-size: 0.9rem; margin-bottom: 0.2rem;">
-                    <i class="fa-solid fa-circle-xmark"></i> Produce Listing Rejected
+                    <i class="fa-solid fa-circle-xmark"></i> <span>Produce Listing Rejected</span>
                 </div>
                 <div id="prodModerationReason" style="font-size: 0.85rem; color: #b91c1c;"></div>
             </div>
@@ -970,7 +974,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Publish Produce Listing
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Publish Produce Listing</span>
                 </button>
             </form>
         </div>
@@ -983,7 +987,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
                 <div>
                     <h2 style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fa-solid fa-clipboard-list"></i> My Orders Dashboard
+                        <i class="fa-solid fa-clipboard-list"></i> <span>My Orders Dashboard</span>
                     </h2>
                     <p style="color: var(--text-muted); font-size: 0.875rem;">Private order history for your account.</p>
                 </div>
@@ -1065,7 +1069,7 @@
         <div class="modal-card" style="max-width: 750px;">
             <button class="modal-close" onclick="closeModal('apiDocsModal')"><i class="fa-solid fa-xmark"></i></button>
             <h2 style="margin-bottom: 0.5rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-network-wired"></i> REST API Documentation
+                <i class="fa-solid fa-network-wired"></i> <span>REST API Documentation</span>
             </h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Backend endpoints provided by Flask API.</p>
 
@@ -1114,10 +1118,10 @@
             <button class="modal-close" onclick="closeModal('analyticsModal')"><i class="fa-solid fa-xmark"></i></button>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <h2 style="color: #4f46e5; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fa-solid fa-chart-pie"></i> Admin Analytics & Power BI Dashboard
+                    <i class="fa-solid fa-chart-pie"></i> <span>Admin Analytics & Power BI Dashboard</span>
                 </h2>
                 <span class="badge-status" style="background: #e0e7ff; color: #4338ca; font-size: 0.8rem;">
-                    <i class="fa-solid fa-shield-halved"></i> Platform Owner Access
+                    <i class="fa-solid fa-shield-halved"></i> <span>Platform Owner Access</span>
                 </span>
             </div>
 
@@ -1145,13 +1149,13 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                 <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color);">
                     <h4 style="margin-bottom: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
-                        <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i> Top Farmers by Sales
+                        <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i> <span>Top Farmers by Sales</span>
                     </h4>
                     <div id="topFarmersList" style="font-size: 0.85rem; color: var(--text-muted);">Loading...</div>
                 </div>
                 <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid var(--border-color);">
                     <h4 style="margin-bottom: 0.75rem; color: var(--text-main); font-size: 0.95rem;">
-                        <i class="fa-solid fa-leaf" style="color: var(--primary);"></i> Produce Sales by Category
+                        <i class="fa-solid fa-leaf" style="color: var(--primary);"></i> <span>Produce Sales by Category</span>
                     </h4>
                     <div id="categoryBreakdownList" style="font-size: 0.85rem; color: var(--text-muted);">Loading...</div>
                 </div>
@@ -1160,17 +1164,17 @@
             <!-- Power BI Web Connection URL Box -->
             <div style="background: #eef2ff; border: 1px dashed #6366f1; border-radius: 12px; padding: 1rem;">
                 <div style="font-weight: 700; color: #3730a3; font-size: 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fa-solid fa-plug"></i> Direct Power BI Connection Endpoints (Basic Auth)
+                    <i class="fa-solid fa-plug"></i> <span>Direct Power BI Connection Endpoints (Basic Auth)</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <button class="btn btn-outline" style="background: white; font-size: 0.75rem; padding: 0.35rem 0.75rem;" onclick="copyPowerBIUrl('/summary')">
-                        <i class="fa-solid fa-copy"></i> Summary KPIs REST URL
+                        <i class="fa-solid fa-copy"></i> <span>Summary KPIs REST URL</span>
                     </button>
                     <button class="btn btn-outline" style="background: white; font-size: 0.75rem; padding: 0.35rem 0.75rem;" onclick="copyPowerBIUrl('/orders-over-time?interval=day')">
-                        <i class="fa-solid fa-copy"></i> Sales Over Time URL
+                        <i class="fa-solid fa-copy"></i> <span>Sales Over Time URL</span>
                     </button>
                     <button class="btn btn-outline" style="background: white; font-size: 0.75rem; padding: 0.35rem 0.75rem;" onclick="copyPowerBIUrl('/top-farmers')">
-                        <i class="fa-solid fa-copy"></i> Top Farmers URL
+                        <i class="fa-solid fa-copy"></i> <span>Top Farmers URL</span>
                     </button>
                 </div>
             </div>
@@ -1198,18 +1202,32 @@
             loadProducts();
         });
 
+        window.addEventListener('languageChanged', () => {
+            updateNavAuthUI();
+            if (allProducts && allProducts.length >= 0) {
+                renderProducts(allProducts);
+            }
+            if (document.getElementById('ordersModal').classList.contains('active')) {
+                loadOrders();
+            }
+        });
+
 
         // Update Navbar Login/Profile UI
         function updateNavAuthUI() {
             const container = document.getElementById('navAuthContainer');
             const isAdmin = currentUser && (currentUser.user_type === 'admin' || currentUser.username === 'admin');
 
+            const tPowerBi = 'Power BI Analytics';
+            const tListProd = 'List Produce';
+            const tLogin = 'Log In';
+
             if (currentUser && currentUser.username) {
                 const initials = currentUser.username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
                 container.innerHTML = `
                     ${isAdmin ? `
                         <button class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5, #6366f1); border: none;" onclick="openAnalyticsModal()">
-                            <i class="fa-solid fa-chart-pie"></i> Power BI Analytics
+                            <i class="fa-solid fa-chart-pie"></i> ${tPowerBi}
                         </button>
                     ` : ''}
                     <button class="btn btn-outline" style="background: #ecfdf5; border-color: var(--primary);" onclick="openProfileModal()">
@@ -1217,7 +1235,7 @@
                         <span>${escapeHtml(currentUser.username)}</span>
                     </button>
                     <button class="btn btn-primary" onclick="openAddProductModal()">
-                        <i class="fa-solid fa-store"></i> List Product
+                        <i class="fa-solid fa-store"></i> ${tListProd}
                     </button>
                     <button class="btn btn-outline" style="border-color: #ef4444; color: #ef4444; padding: 0.6rem 0.8rem;" title="Sign Out" onclick="logout()">
                         <i class="fa-solid fa-right-from-bracket"></i>
@@ -1226,10 +1244,10 @@
             } else {
                 container.innerHTML = `
                     <button class="btn btn-outline" onclick="openAuthModal('login')">
-                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                        <i class="fa-solid fa-right-to-bracket"></i> ${tLogin}
                     </button>
                     <button class="btn btn-primary" onclick="openAddProductModal()">
-                        <i class="fa-solid fa-store"></i> List Product
+                        <i class="fa-solid fa-store"></i> ${tListProd}
                     </button>
                 `;
             }
@@ -1360,15 +1378,23 @@
         // Render Product Cards
         function renderProducts(products) {
             const grid = document.getElementById('productsGrid');
-            document.getElementById('productCount').textContent = products.length;
+            const productCountElem = document.getElementById('productCount');
+            if (productCountElem) productCountElem.textContent = products.length;
+
+            const tNoProduce = 'No Produce Found';
+            const tNoProduceDesc = 'Try adjusting your search query or filter categories to find farm produce.';
+            const tListProduce = 'List Produce';
+            const tDelete = 'Delete';
+            const tPending = 'Pending Review';
+            const tOrderNow = 'Order Now';
 
             if (products.length === 0) {
                 grid.innerHTML = `
                     <div class="empty-state" style="grid-column: 1 / -1;">
                         <i class="fa-solid fa-leaf"></i>
-                        <h3>No Produce Found</h3>
-                        <p style="color: var(--text-muted);">Be the first farmer to list fresh produce on the platform!</p>
-                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="openAddProductModal()">+ List Produce</button>
+                        <h3>${tNoProduce}</h3>
+                        <p style="color: var(--text-muted);">${tNoProduceDesc}</p>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="openAddProductModal()">+ ${tListProduce}</button>
                     </div>
                 `;
                 return;
@@ -1380,15 +1406,17 @@
 
                 let deleteBtnHtml = isOwnerOrAdmin ? `
                     <button class="btn btn-outline" style="border-color: #ef4444; color: #ef4444; padding: 0.5rem 0.8rem;" onclick="deleteProductConfirm(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')" title="Delete Listing">
-                        <i class="fa-solid fa-trash-can"></i> Delete
+                        <i class="fa-solid fa-trash-can"></i> ${tDelete}
                     </button>
                 ` : '';
 
                 let statusBadgeHtml = isPending ? `
                     <div class="stock-badge" style="background: #fef3c7; color: #d97706; right: auto; left: 1rem;">
-                        <i class="fa-solid fa-clock"></i> Pending Review
+                        <i class="fa-solid fa-clock"></i> ${tPending}
                     </div>
                 ` : '';
+
+                const stockText = `${p.quantity} in stock`;
 
                 return `
                 <div class="product-card">
@@ -1398,7 +1426,7 @@
                             <i class="fa-solid fa-location-dot"></i> ${escapeHtml(p.location || 'Local Farm')}
                         </div>
                         <div class="stock-badge">
-                            ${p.quantity} in stock
+                            ${stockText}
                         </div>
                         ${statusBadgeHtml}
                     </div>
@@ -1413,7 +1441,7 @@
                         </div>
                         <div class="product-actions" style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-primary" style="flex: 1;" onclick="openOrderModal(${p.id})">
-                                <i class="fa-solid fa-cart-shopping"></i> Order Now
+                                <i class="fa-solid fa-cart-shopping"></i> ${tOrderNow}
                             </button>
                             ${deleteBtnHtml}
                         </div>
@@ -1425,7 +1453,8 @@
 
         // Delete Product Confirmation & API Request
         async function deleteProductConfirm(productId, productName) {
-            if (!confirm(`Are you sure you want to delete '${productName}'? This cannot be undone.`)) {
+            const confirmMsg = `Are you sure you want to delete "${productName}"?`;
+            if (!confirm(confirmMsg)) {
                 return;
             }
 
@@ -1985,9 +2014,9 @@
             } else {
                 document.getElementById('authTitle').textContent = 'Create Account';
                 document.getElementById('registerFields').style.display = 'block';
-                document.getElementById('authSubmitBtn').textContent = 'Register';
+                document.getElementById('authSubmitBtn').textContent = 'Create Account';
                 document.getElementById('authToggleText').textContent = 'Already have an account?';
-                document.getElementById('authToggleBtn').textContent = 'Login Here';
+                document.getElementById('authToggleBtn').textContent = 'Log In Here';
             }
             document.getElementById('authModal').classList.add('active');
         }
