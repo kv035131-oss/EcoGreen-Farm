@@ -2,9 +2,11 @@ services:
   - type: web
     name: ecogreen-farm
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: gunicorn run:app
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: MODERATION_MODE
         value: gemini
       - key: GEMINI_API_KEY
