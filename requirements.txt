@@ -8,6 +8,7 @@ alembic>=1.11.1
 psycopg2-binary>=2.9.7
 gunicorn>=20.1.0
 requests>=2.31.0
+cloudinary>=1.33.0
 google-generativeai>=0.8.3
 anthropic>=1.9.0
 apscheduler>=3.10.0
